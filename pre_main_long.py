@@ -1,35 +1,26 @@
-import warnings
-warnings.filterwarnings('ignore')
+import pickle
 import numpy as np
 import time
-import sys
-import cv2
 import random
-import torch
-import torch.optim as optim
-import torch.nn as nn
-from torch.utils.data import Dataset, DataLoader, TensorDataset
 import argparse
 import os
 import math
 from time import localtime, strftime
 from sklearn import metrics
-import pickle
+import shutil
+
+import torch
+import torch.optim as optim
+import torch.nn as nn
+from torch.utils.data import Dataset, DataLoader, TensorDataset
 
 torch.backends.cudnn.benchmark = True
 from util.util import timeSince, get_yaml_data
-from util.util import weights_init, VALRMSE
-from tensorboardX import SummaryWriter
-import shutil
+from util.util import VALRMSE
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "0,1,2,3"
 
 TORCH_VERSION = torch.__version__
-
-log_name = 'logs/taxibj_'
-
-# seed = 777
-
 
 class DataConfiguration:
     def __init__(self, Len_close, Len_period, Len_trend):
@@ -71,7 +62,6 @@ def run(mcof):
     IS_TRAIN = 0
     IS_VAL = 0
     ####SETTING####
-    TASK_TYPE = mcof.task
     INP_TYPE = mcof.inp_type
     DATA_TYPE = mcof.dataset_type
     RECORD_ID = mcof.record
@@ -80,7 +70,6 @@ def run(mcof):
     PRESUME_EPOCH_S = mcof.presume_epoch_s
     IS_REMOVE = mcof.is_remove
     IS_BEST = mcof.best
-    IS_ATTENTION = mcof.attention
 
     if len(mcof.mode) > 1:
         if mcof.mode == 'train':
@@ -127,7 +116,6 @@ def run(mcof):
     EVAL_MODE = setting['TRAIN']['EVAL_MODE']
     BATCH_SIZE = setting['TRAIN']['BATCH_SIZE']
     EVAL_START_EPOCH = setting['TRAIN']['EVAL_START_EPOCH']
-    print(setting)
 
     C = 2
     H = 32
@@ -217,9 +205,6 @@ def run(mcof):
         print('LONG TRAINING START')
         print('-' * 30)
 
-        writer_gen = SummaryWriter(f'runs/exp_gen/{curr_time[2:]}')
-        writer_val = SummaryWriter(f'runs/exp_val/{curr_time[2:]}')
-        print(f'Runs procedure in {curr_time[2:]} file')
 
         start = time.time()
 
@@ -240,22 +225,9 @@ def run(mcof):
         criterion = torch.nn.L1Loss()
         class_criterion = nn.CrossEntropyLoss()
 
-        #if Keep_Train:
-            #path = './model/{}/MinMax/Long/Imp_{}/pre_model_{}.pth'.format(DATA_TYPE, PRESUME_RECORD_ID,
-                                                                           #PRESUME_EPOCH_S)
-            #net.load_state_dict(torch.load(path))
-            ## pretrained_dict = torch.load(path)
-            ## net_dict = net.state_dict()
-            ## pretrained_dict = {k: v for k, v in pretrained_dict.items() if k in net_dict}
-            ## net_dict.update(pretrained_dict)
-            ## net.load_state_dict(net_dict)
-        #else:
-            #pass
 
         if Keep_Train:
             path = './model/Imp_{}/pre_model_ep_{}.pth'.format(PRESUME_RECORD_ID, PRESUME_EPOCH_S)
-            #path = './model/{}/MinMax/Short/Imp_{}/pre_model_{}.pth'.format(DATA_TYPE, PRESUME_RECORD_ID, PRESUME_EPOCH_S)
-            #net.load_state_dict(torch.load(path))
 
             pretrained_dict = torch.load(path)
 
@@ -358,14 +330,7 @@ def run(mcof):
                         epoch, i + 1, len(train_loader), loss_gen.item(), rmse.item(),RECORD_ID)
                     record.write(info_matrix + '\n')
                     #print(info_matrix)
-                    writer_val.add_scalar('mse', loss_gen.item(), it)
-                    writer_val.add_scalar('rmse', rmse.item(), it)
 
-                    writer_gen.add_scalar('Union', loss.item() * 10, it)
-                    writer_gen.add_scalar('Generator', loss_gen.item() * 10, it)
-                    writer_gen.add_scalar('Tim Classifier', loss_tim.item() * 10, it)
-                    writer_gen.add_scalar('TYP Classifier', loss_typ.item() * 10, it)
-                    writer_gen.add_scalar('lr', optimizer.param_groups[0]['lr'], it)
 
                 if it % ITERATION_STEP == 0:
                     dirs = './model/Imp_{}'.format(RECORD_ID)
@@ -553,10 +518,6 @@ def run(mcof):
                             else:
                                 print('->','timestamp',i,ts_Y_test[i],'rmse',rmse_)
                             test_rmse_list.append(rmse_)
-                            if IS_ATTENTION:
-                                f = open("test/attention_long/{}.pkl".format(i),'wb')
-                                pickle.dump(att_map,f)
-                                f.close()
 
                         if IS_REMOVE and i in PROBLEM_LIST:
                             pass
@@ -631,7 +592,6 @@ if __name__ == '__main__':
     parser.add_argument('--mode', type=str, default='train', help='The processing phase of the model')
     parser.add_argument('--record', type=str, help='Recode ID')
     parser.add_argument('--presume_record', type=str, help='Presume Recode ID')
-    parser.add_argument('--task', type=str, default='B', help='Processing task type')
     parser.add_argument('--keep_train', type=int, default=0, help='Model keep training')
     parser.add_argument('--epoch_s', type=int, default=0, help='Continue training on the previous model')
     parser.add_argument('--presume_epoch_s', type=int, default=0, help='Continue training on the previous model')
@@ -639,13 +599,12 @@ if __name__ == '__main__':
                         choices=['external', 'train', 'accumulate', 'accumulate_avg', 'holiday', 'windspeed', 'weather',
                                  'temperature'])
     parser.add_argument('--patch_method', type=str, default='STTN', choices=['EINOPS', 'UNFOLD', 'STTN'])
-    parser.add_argument('--dataset_type', type=str, default='Sub', choices=['Sub', 'All'],
+    parser.add_argument('--dataset_type', type=str, default='All', choices=['Sub', 'All'],
                         help='datasets type is sub_datasets or all_datasets')
     parser.add_argument('--context_type', type=str, default='cpt', choices=['cpt', 'cpte'],
                         help='components of contextual data')
     parser.add_argument('--is_remove', type=int, default=0, help='whether to remove the problematic label')
 
-    parser.add_argument('--ext_inp_type', type=str, default='external', choices=['external'])
     parser.add_argument('--debug', type=int, default=0, help='Model debug')
     parser.add_argument('--pretrained_class_model_path', type=str, default=None,
                         help='freeze encoder param,using pretrain param')
@@ -654,7 +613,6 @@ if __name__ == '__main__':
     parser.add_argument('--pos_en', type=int, default=1, help='positional encoding')
     parser.add_argument('--pos_en_mode', type=str, default='cat', help='positional encoding mode')
     parser.add_argument('--best', type=int, default=0, help='best test')
-    parser.add_argument('--attention', type=int, default=0, help='output attention map')
     mcof = parser.parse_args()
 
     run(mcof)
