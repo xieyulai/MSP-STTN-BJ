@@ -17,6 +17,7 @@ from torch.utils.data import Dataset, DataLoader, TensorDataset
 torch.backends.cudnn.benchmark = True
 from util.util import timeSince, get_yaml_data
 from util.util import VALRMSE
+from net.msp_sttn import Prediction_Model as Model
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "0,1,2,3"
 
@@ -85,6 +86,7 @@ def run(mcof):
     ####SETTING####
     DROPOUT = setting['TRAIN']['DROPOUT']
     PATCH_LIST = setting['TRAIN']['PATCH_LIST']
+    PATCH_LIST= eval(PATCH_LIST)
     IS_USING_SKIP = setting['TRAIN']['IS_USING_SKIP']
     MODEL_DIM = setting['TRAIN']['MODEL_DIM']
     ATT_NUM = setting['TRAIN']['ATT_NUM']
@@ -125,33 +127,6 @@ def run(mcof):
 
 
 
-    ####MODEL####
-    input_channels = C
-
-    P_list = eval(PATCH_LIST)
-
-    from net.msp_sttn import Prediction_Model as Model
-
-    net = Model(
-        mcof,
-        Length=LENGTH,  # 8
-        Width=W,  # 200
-        Height=H,  # 200
-        Input_dim=input_channels,  # 1
-        Patch_list=P_list,  # 小片段的大小
-        Dropout=DROPOUT,
-        Att_num=ATT_NUM,  # 2
-        Cross_att_num=CROSS_ATT_NUM,  # 2
-        Using_skip=IS_USING_SKIP,  # 1
-        Encoding_dim=MODEL_DIM,  # 256
-        Embedding_dim=MODEL_DIM,  # 256
-        Is_mask=IS_MASK_ATT,  # 1
-        Cat_style=CAT_STYLE,
-        Is_aux=IS_AUX,
-        ONLY_CONV6=ONLY_CONV6,
-        TRANS_RESIDUAL=TRANS_RESIDUAL,
-    )
-
 
     if IS_TRAIN:
 
@@ -182,6 +157,18 @@ def run(mcof):
             batch_size=BATCH_SIZE,
             shuffle=True,
             num_workers=1
+        )
+
+
+        ####MODEL####
+        net = Model(
+            mcof, Length=LENGTH, Width=W, Height=H, Input_dim=C,
+            Patch_list=PATCH_LIST, Dropout=DROPOUT,
+            Att_num=ATT_NUM, Cross_att_num=CROSS_ATT_NUM,
+            Using_skip=IS_USING_SKIP, Encoding_dim=MODEL_DIM,
+            Embedding_dim=MODEL_DIM, Is_mask=IS_MASK_ATT,
+            Cat_style=CAT_STYLE, Is_aux=IS_AUX, ONLY_CONV6=ONLY_CONV6,
+            TRANS_RESIDUAL=TRANS_RESIDUAL,
         )
 
 
@@ -381,6 +368,16 @@ def run(mcof):
             PROBLEM_LIST = [556, 748, 772, 773, 774, 775, 776, 777, 778, 779, 780, 781, 782, 783, 784, 785, 786, 787, 788, 789, 790, 791, 792, 793, 794, 795, 796, 844, 892]
             for epoch in range(EVAL_START_EPOCH, EPOCH_E):
 
+                ####MODEL####
+                net = Model(
+                    mcof, Length=LENGTH, Width=W, Height=H, Input_dim=C,
+                    Patch_list=PATCH_LIST, Dropout=DROPOUT,
+                    Att_num=ATT_NUM, Cross_att_num=CROSS_ATT_NUM,
+                    Using_skip=IS_USING_SKIP, Encoding_dim=MODEL_DIM,
+                    Embedding_dim=MODEL_DIM, Is_mask=IS_MASK_ATT,
+                    Cat_style=CAT_STYLE, Is_aux=IS_AUX, ONLY_CONV6=ONLY_CONV6,
+                    TRANS_RESIDUAL=TRANS_RESIDUAL,
+                )
 
                 if EVAL_MODE == 'Iteration':
                     model_path = './model/Imp_{}/pre_model_it_{}.pth'.format(RECORD_ID,(epoch + 1)*ITERATION_STEP)

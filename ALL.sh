@@ -1,6 +1,6 @@
 #!/bin/bash
 
-RECORD=1002
+RECORD=0710
 
 DATASET=All
 #DATASET=Sub

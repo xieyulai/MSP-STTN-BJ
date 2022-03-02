@@ -18,6 +18,8 @@ from torch.utils.data import Dataset, DataLoader, TensorDataset
 from util.util import timeSince, get_yaml_data
 from util.util import VALRMSE
 
+from net.msp_sttn import Prediction_Model as Model
+
 torch.backends.cudnn.enabled = True
 torch.backends.cudnn.deterministic = False
 torch.backends.cudnn.benchmark = True
@@ -90,6 +92,7 @@ def run(mcof):
     ####SETTING####
     DROPOUT = setting['TRAIN']['DROPOUT']
     PATCH_LIST = setting['TRAIN']['PATCH_LIST']
+    PATCH_LIST= eval(PATCH_LIST)
     IS_USING_SKIP = setting['TRAIN']['IS_USING_SKIP']
     MODEL_DIM = setting['TRAIN']['MODEL_DIM']
     ATT_NUM = setting['TRAIN']['ATT_NUM']
@@ -136,33 +139,6 @@ def run(mcof):
 
 
 
-    ####MODEL####
-    input_channels = C
-
-    P_list = eval(PATCH_LIST)
-
-    from net.msp_sttn import Prediction_Model as Model
-
-    net = Model(
-        mcof,
-        Length=LENGTH,  # 8
-        Width=W,  # 200
-        Height=H,  # 200
-        Input_dim=input_channels,  # 1
-        Patch_list=P_list,  # 小片段的大小
-        Dropout=DROPOUT,
-        Att_num=ATT_NUM,  # 2
-        Cross_att_num=CROSS_ATT_NUM,  # 2
-        Using_skip=IS_USING_SKIP,  # 1
-        Encoding_dim=MODEL_DIM,  # 256
-        Embedding_dim=MODEL_DIM,  # 256
-        Is_mask=IS_MASK_ATT,  # 1
-        Cat_style=CAT_STYLE,
-        Is_aux=IS_AUX,
-        ONLY_CONV6=ONLY_CONV6,
-        TRANS_RESIDUAL=TRANS_RESIDUAL,
-    )
-
 
 
 
@@ -203,6 +179,18 @@ def run(mcof):
             shuffle=True,
             num_workers=1
         )
+
+        ####MODEL####
+        net = Model(
+            mcof, Length=LENGTH, Width=W, Height=H, Input_dim=C,
+            Patch_list=PATCH_LIST, Dropout=DROPOUT, Att_num=ATT_NUM,
+            Cross_att_num=CROSS_ATT_NUM, Using_skip=IS_USING_SKIP,
+            Encoding_dim=MODEL_DIM, Embedding_dim=MODEL_DIM,
+            Is_mask=IS_MASK_ATT, Cat_style=CAT_STYLE,
+            Is_aux=IS_AUX, ONLY_CONV6=ONLY_CONV6,
+            TRANS_RESIDUAL=TRANS_RESIDUAL,
+        )
+
 
 
         ####TRAINING####
@@ -397,6 +385,9 @@ def run(mcof):
         )
 
 
+
+
+
         print('EVALUATION START')
         print('IS_REMOVE',IS_REMOVE)
         print('-' * 30)
@@ -410,6 +401,19 @@ def run(mcof):
             mae_list = []  ###xie
             for epoch in range(EVAL_START_EPOCH, EPOCH_E):
                 test_t = time.time()
+
+
+                ####MODEL####
+                net = Model(
+                    mcof, Length=LENGTH, Width=W, Height=H, Input_dim=C,
+                    Patch_list=PATCH_LIST, Dropout=DROPOUT, Att_num=ATT_NUM,
+                    Cross_att_num=CROSS_ATT_NUM, Using_skip=IS_USING_SKIP,
+                    Encoding_dim=MODEL_DIM, Embedding_dim=MODEL_DIM,
+                    Is_mask=IS_MASK_ATT, Cat_style=CAT_STYLE,
+                    Is_aux=IS_AUX, ONLY_CONV6=ONLY_CONV6,
+                    TRANS_RESIDUAL=TRANS_RESIDUAL,
+                )
+
 
                 if EVAL_MODE == 'Iteration':
                     model_path = './model/Imp_{}/pre_model_it_{}.pth'.format(RECORD_ID,(epoch + 1)*ITERATION_STEP)
