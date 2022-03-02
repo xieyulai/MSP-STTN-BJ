@@ -8,7 +8,6 @@ TRAIN:
 
   TRANS_RESIDUAL: 1
 
-  IS_BEST_EVAL: 0
   IS_TEST: 1
   DROPOUT: 0.1
   OPTIM: Adam

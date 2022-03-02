@@ -105,7 +105,6 @@ def run(mcof):
     LEN_TREND = setting['TRAIN']['LEN_TREND']
     LENGTH = setting['TRAIN']['LENGTH']
     IS_SEQ = setting['TRAIN']['IS_SEQ']
-    #IS_REDUCE = setting['TRAIN']['IS_REDUCE']
     OUT_STYLE = setting['TRAIN']['OUT_STYLE']
     CAT_STYLE = setting['TRAIN']['CAT_STYLE']
     IS_AUX = setting['TRAIN']['IS_AUX']
@@ -188,7 +187,6 @@ def run(mcof):
             Using_skip=IS_USING_SKIP,  # 1
             Encoding_dim=MODEL_DIM,  # 256
             Embedding_dim=MODEL_DIM,  # 256
-            #Is_reduce=IS_REDUCE,
             Is_mask=IS_MASK_ATT,  # 1
             Is_scaling=Is_scaling,  # 1
             Debugging=0,  # 0
@@ -213,7 +211,6 @@ def run(mcof):
 
         #### Optimizer ####
         optimizer = optim.Adam(net.parameters(), lr=LR_G)
-        # scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=eval(MILE_STONE), gamma=0.1)
 
         gamma = 0.1
         warm_up_with_multistep_lr = lambda epoch: epoch / int(WARMUP_EPOCH) if epoch <= int(
@@ -221,7 +218,6 @@ def run(mcof):
         scheduler = optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=warm_up_with_multistep_lr)
 
         #### Loss Function ####
-        # criterion = torch.nn.MSELoss()
         criterion = torch.nn.L1Loss()
         class_criterion = nn.CrossEntropyLoss()
 
@@ -233,21 +229,6 @@ def run(mcof):
 
             net_dict = net.state_dict()
             pretrained_dict = {k: v for k, v in pretrained_dict.items() if k in net_dict}
-
-
-            ignore_weights = []
-            #ignore_weights.append('linear_tim_aux.0.weight')
-            #ignore_weights.append('linear_tim_aux.0.bias')
-            #ignore_weights.append('linear_typ_aux.0.weight')
-            #ignore_weights.append('linear_typ_aux.0.bias')
-
-            for key in ignore_weights:
-                if pretrained_dict.pop(key, None) is not None:
-                    print('Sucessfully Remove Weights: {}.'.format(key))
-                else:
-                    print('Can Not Remove Weights: {}.'.format(key))
-
-
 
 
             net_dict.update(pretrained_dict)
@@ -442,7 +423,6 @@ def run(mcof):
                     Encoding_dim=MODEL_DIM,
                     Embedding_dim=MODEL_DIM,
                     Is_mask=IS_MASK_ATT,
-                    #Is_reduce=IS_REDUCE,
                     Is_scaling=Is_scaling,
                     Debugging=0,
                     Merge=MERGE,
@@ -454,21 +434,13 @@ def run(mcof):
                     TRANS_RESIDUAL=TRANS_RESIDUAL,
                 )
 
-                if IS_BEST_EVAL:
-                    model_path = 'model/best_model/pre_model_best_{}.pth'.format('B')
+                if EVAL_MODE == 'Iteration':
+                    model_path = './model/Imp_{}/pre_model_it_{}.pth'.format(RECORD_ID,(epoch + 1)*ITERATION_STEP)
                 else:
-                    if EVAL_MODE == 'Iteration':
-                        model_path = './model/Imp_{}/pre_model_it_{}.pth'.format(RECORD_ID,(epoch + 1)*ITERATION_STEP)
-                    else:
-                        model_path = './model/Imp_{}/pre_model_ep_{}.pth'.format(RECORD_ID,epoch + 1)
-                        #model_path = './model/All/MinMax/Short/Imp_{}/pre_model_{}.pth'.format(RECORD_ID,epoch + 1)
-                    print(model_path)
+                    model_path = './model/Imp_{}/pre_model_ep_{}.pth'.format(RECORD_ID,epoch + 1)
+                print(model_path)
 
-                #try:
-                    net.load_state_dict(torch.load(model_path))
-                #except:
-                    #print('error!')
-                    #net = torch.load(model_path)
+                net.load_state_dict(torch.load(model_path))
 
                 device = torch.device('cuda:0') if torch.cuda.is_available() else torch.device('cpu')
                 net = net.to(device)

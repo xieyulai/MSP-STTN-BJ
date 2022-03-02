@@ -89,7 +89,6 @@ def run(mcof):
             EVAL_BATCH = setting['TRAIN']['EVAL_BATCH']
 
     ####SETTING####
-    IS_BEST_EVAL = setting['TRAIN']['IS_BEST_EVAL']
     DROPOUT = setting['TRAIN']['DROPOUT']
     MERGE = setting['TRAIN']['MERGE']
     PATCH_LIST = setting['TRAIN']['PATCH_LIST']
@@ -106,7 +105,6 @@ def run(mcof):
     LOSS_GEN = setting['TRAIN']['LOSS_GEN']
     LOSS_TIME = setting['TRAIN']['LOSS_TIME']
     LOSS_TYP = setting['TRAIN']['LOSS_TYP']
-    # LOSS_VGG = setting['TRAIN']['LOSS_VGG']
     LEN_CLOSE = setting['TRAIN']['LEN_CLOSE']
     LEN_PERIOD = setting['TRAIN']['LEN_PERIOD']
     LEN_TREND = setting['TRAIN']['LEN_TREND']
@@ -120,12 +118,10 @@ def run(mcof):
     IS_C3D = setting['TRAIN']['IS_C3D']
     ONLY_CONV6 = setting['TRAIN']['ONLY_CONV6']
     TRANS_RESIDUAL = setting['TRAIN']['TRANS_RESIDUAL']
-    #IS_REDUCE = setting['TRAIN']['IS_REDUCE']
     EVAL_START_EPOCH = setting['TRAIN']['EVAL_START_EPOCH']
     seed = setting['TRAIN']['SEED']
     IS_DETERMINISTIC = setting['TRAIN']['IS_DETERMINISTIC']
     BATCH_SIZE = setting['TRAIN']['BATCH_SIZE']
-    #EVAL_MODE = setting['TRAIN']['EVAL_MODE']
     ITERATION_STEP = setting['TRAIN']['ITERATION_STEP']
     print(setting)
 
@@ -170,15 +166,8 @@ def run(mcof):
             torch.backends.cudnn.enabled = True
             torch.backends.cudnn.benchmark = True
             torch.backends.cudnn.deterministic = True
-            #torch.backends.cudnn.benchmark = True
-        #### 数据加载和预处理 ###
-        # np.random.seed(seed)
-        # torch.manual_seed(seed)
-        # torch.backends.cudnn.deterministic = True
-        # torch.backends.cudnn.benchmark = False
 
         train_ds = ds_factory.get_train_dataset()
-        #train_ds = ds_factory.get_test_dataset()
 
         train_loader = DataLoader(
             dataset=train_ds,
@@ -209,7 +198,6 @@ def run(mcof):
             Encoding_dim=MODEL_DIM,  # 256
             Embedding_dim=MODEL_DIM,  # 256
             Is_mask=IS_MASK_ATT,  # 1
-            #Is_reduce=IS_REDUCE,
             Is_scaling=Is_scaling,  # 1
             Debugging=0,  # 0
             Merge=MERGE,  # cross-attention
@@ -233,7 +221,6 @@ def run(mcof):
 
         #### Optimizer ####
         optimizer = optim.Adam(net.parameters(), lr=eval(LR_G))
-        # scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=eval(MILE_STONE), gamma=0.1)
 
         gamma = 0.5
         warm_up_with_multistep_lr = lambda epoch: epoch / int(WARMUP_EPOCH) if epoch <= int(
@@ -449,7 +436,6 @@ def run(mcof):
                     Encoding_dim=MODEL_DIM,
                     Embedding_dim=MODEL_DIM,
                     Is_mask=IS_MASK_ATT,
-                    #Is_reduce=IS_REDUCE,
                     Is_scaling=Is_scaling,
                     Debugging=0,
                     Merge=MERGE,
@@ -461,28 +447,13 @@ def run(mcof):
                     TRANS_RESIDUAL=TRANS_RESIDUAL,
                 )
 
-                if IS_BEST_EVAL:
-                    model_path = 'model/best_model/pre_model_best_{}.pth'.format('B')
+                if EVAL_MODE == 'Iteration':
+                    model_path = './model/Imp_{}/pre_model_it_{}.pth'.format(RECORD_ID,(epoch + 1)*ITERATION_STEP)
                 else:
-                    if EVAL_MODE == 'Iteration':
-                        model_path = './model/Imp_{}/pre_model_it_{}.pth'.format(RECORD_ID,(epoch + 1)*ITERATION_STEP)
-                    else:
-                        model_path = './model/Imp_{}/pre_model_ep_{}.pth'.format(RECORD_ID,epoch + 1)
-                        #model_path = './model/All/MinMax/Short/Imp_{}/pre_model_{}.pth'.format(RECORD_ID,epoch + 1)
-                    print(model_path)
+                    model_path = './model/Imp_{}/pre_model_ep_{}.pth'.format(RECORD_ID,epoch + 1)
+                print(model_path)
 
-                #try:
-
-                    #pretrained_dict = torch.load(model_path)
-                    #net_dict = net.state_dict()
-                    #pretrained_dict = {k: v for k, v in pretrained_dict.items() if k in net_dict}
-                    #net_dict.update(pretrained_dict)
-                    #net.load_state_dict(net_dict)
-
-                    net.load_state_dict(torch.load(model_path))
-                #except:
-                    #print('error!')
-                    #net = torch.load(model_path)
+                net.load_state_dict(torch.load(model_path))
 
                 device = torch.device('cuda:0') if torch.cuda.is_available() else torch.device('cpu')
                 net = net.to(device)
