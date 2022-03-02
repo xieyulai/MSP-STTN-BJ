@@ -68,7 +68,6 @@ def run(mcof):
     ####SETTING####
     INP_TYPE = mcof.inp_type
     DATA_TYPE = mcof.dataset_type
-    CONTEXT_TYPE = mcof.context_type
     RECORD_ID = mcof.record
     PRESUME_RECORD_ID = mcof.presume_record
     EPOCH_S = mcof.epoch_s
@@ -134,6 +133,38 @@ def run(mcof):
                               )
     ds_factory = DatasetFactory(dconf, INP_TYPE, DATA_TYPE, LENGTH, IS_SEQ)
 
+
+
+    ####MODEL####
+    input_channels = C
+
+    P_list = eval(PATCH_LIST)
+
+    from net.msp_sttn import Prediction_Model as Model
+
+    net = Model(
+        mcof,
+        Length=LENGTH,  # 8
+        Width=W,  # 200
+        Height=H,  # 200
+        Input_dim=input_channels,  # 1
+        Patch_list=P_list,  # 小片段的大小
+        Dropout=DROPOUT,
+        Att_num=ATT_NUM,  # 2
+        Cross_att_num=CROSS_ATT_NUM,  # 2
+        Using_skip=IS_USING_SKIP,  # 1
+        Encoding_dim=MODEL_DIM,  # 256
+        Embedding_dim=MODEL_DIM,  # 256
+        Is_mask=IS_MASK_ATT,  # 1
+        Cat_style=CAT_STYLE,
+        Is_aux=IS_AUX,
+        ONLY_CONV6=ONLY_CONV6,
+        TRANS_RESIDUAL=TRANS_RESIDUAL,
+    )
+
+
+
+
     if IS_TRAIN:
 
         try:
@@ -172,32 +203,6 @@ def run(mcof):
             num_workers=1
         )
 
-        ####MODEL####
-        input_channels = C
-
-        P_list = eval(PATCH_LIST)
-
-        from net.msp_sttn import Prediction_Model as Model
-
-        net = Model(
-            mcof,
-            Length=LENGTH,  # 8
-            Width=W,  # 200
-            Height=H,  # 200
-            Input_dim=input_channels,  # 1
-            Patch_list=P_list,  # 小片段的大小
-            Dropout=DROPOUT,
-            Att_num=ATT_NUM,  # 2
-            Cross_att_num=CROSS_ATT_NUM,  # 2
-            Using_skip=IS_USING_SKIP,  # 1
-            Encoding_dim=MODEL_DIM,  # 256
-            Embedding_dim=MODEL_DIM,  # 256
-            Is_mask=IS_MASK_ATT,  # 1
-            Cat_style=CAT_STYLE,
-            Is_aux=IS_AUX,
-            ONLY_CONV6=ONLY_CONV6,
-            TRANS_RESIDUAL=TRANS_RESIDUAL,
-        )
 
         ####TRAINING####
         print('SHORT TRAINING START')
@@ -389,11 +394,11 @@ def run(mcof):
             num_workers=1
         )
 
-        #### MODEL ####
-        input_channels = C
-        P_list = eval(PATCH_LIST)
+        ##### MODEL ####
+        #input_channels = C
+        #P_list = eval(PATCH_LIST)
 
-        from net.msp_sttn import Prediction_Model as Model
+        #from net.msp_sttn import Prediction_Model as Model
 
         print('EVALUATION START')
         print('IS_REMOVE',IS_REMOVE)
@@ -409,25 +414,25 @@ def run(mcof):
             for epoch in range(EVAL_START_EPOCH, EPOCH_E):
                 test_t = time.time()
 
-                net = Model(
-                    mcof,
-                    Length=LENGTH,
-                    Width=W,
-                    Height=H,
-                    Input_dim=input_channels,
-                    Patch_list=P_list,
-                    Dropout=DROPOUT,
-                    Att_num=ATT_NUM,
-                    Cross_att_num=CROSS_ATT_NUM,
-                    Using_skip=IS_USING_SKIP,
-                    Encoding_dim=MODEL_DIM,
-                    Embedding_dim=MODEL_DIM,
-                    Is_mask=IS_MASK_ATT,
-                    Cat_style=CAT_STYLE,
-                    Is_aux=IS_AUX,
-                    ONLY_CONV6=ONLY_CONV6,
-                    TRANS_RESIDUAL=TRANS_RESIDUAL,
-                )
+                #net = Model(
+                    #mcof,
+                    #Length=LENGTH,
+                    #Width=W,
+                    #Height=H,
+                    #Input_dim=input_channels,
+                    #Patch_list=P_list,
+                    #Dropout=DROPOUT,
+                    #Att_num=ATT_NUM,
+                    #Cross_att_num=CROSS_ATT_NUM,
+                    #Using_skip=IS_USING_SKIP,
+                    #Encoding_dim=MODEL_DIM,
+                    #Embedding_dim=MODEL_DIM,
+                    #Is_mask=IS_MASK_ATT,
+                    #Cat_style=CAT_STYLE,
+                    #Is_aux=IS_AUX,
+                    #ONLY_CONV6=ONLY_CONV6,
+                    #TRANS_RESIDUAL=TRANS_RESIDUAL,
+                #)
 
                 if EVAL_MODE == 'Iteration':
                     model_path = './model/Imp_{}/pre_model_it_{}.pth'.format(RECORD_ID,(epoch + 1)*ITERATION_STEP)
@@ -592,9 +597,6 @@ if __name__ == '__main__':
     parser.add_argument('--patch_method', type=str, default='STTN', choices=['EINOPS', 'UNFOLD', 'STTN'])
     parser.add_argument('--dataset_type', type=str, default='All', choices=['Sub', 'All'],
                         help='datasets type is sub_datasets or all_datasets')
-    parser.add_argument('--context_type', type=str, default='cpt', choices=['cpt', 'cpte'],
-                        help='components of contextual data')
-
     parser.add_argument('--is_remove', type=int,default=0, help='whether to remove the problematic label')
 
     parser.add_argument('--pos_en', type=int, default=1, help='positional encoding')

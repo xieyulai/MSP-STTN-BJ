@@ -650,10 +650,9 @@ if __name__ == '__main__':
     parser.add_argument('--inp_type', type=str, default='external',
                         choices=['external', 'accumulate', 'accumulate_avg', 'train', 'holiday', 'windspeed', 'weather',
                                  'temperature'])
-    parser.add_argument('--patch_method', type=str, default='UNFOLD', choices=['EINOPS', 'UNFOLD', 'STTN'])
+    parser.add_argument('--patch_method', type=str, default='STTN', choices=['EINOPS', 'UNFOLD', 'STTN'])
 
     parser.add_argument('--debug', type=int, default=0, help='Model debug')
-    parser.add_argument('--pos_en', type=int, default=1, help='positional encoding')
     parser.add_argument('--pos_en_mode', type=str, default='cat', help='positional encoding mode')
     mcof = parser.parse_args()
 
