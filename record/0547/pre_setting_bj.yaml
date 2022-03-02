@@ -88,8 +88,7 @@ TRAIN:
   CROSS_ATT_NUM: 0
   IS_MASK_ATT: 1
 
-  LR_C: 1e-4
-  LR_G: 1e-4
+  LR: 1e-4
   #LR_D: 0.1
   #LR_G: 0.1
 
@@ -110,8 +109,7 @@ TRAIN:
   #MILE_STONE: '[25,60,120]'
   #MILE_STONE: '[20,50,80]'
 
-  LOSS_SELF: 0.0001
-  LOSS_GEN: 1.0
+  LOSS_MAIN: 1.0
   #LOSS_GEN: 100.0
   LOSS_TIME: 0.00001
   LOSS_TYP: 0.00001

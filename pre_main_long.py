@@ -90,6 +90,7 @@ def run(mcof):
     ATT_NUM = setting['TRAIN']['ATT_NUM']
     CROSS_ATT_NUM = setting['TRAIN']['CROSS_ATT_NUM']
     IS_MASK_ATT = setting['TRAIN']['IS_MASK_ATT']
+    print(setting)
     LR = setting['TRAIN']['LR']
     EPOCH_E = setting['TRAIN']['EPOCH']
     WARMUP_EPOCH = setting['TRAIN']['WARMUP_EPOCH']

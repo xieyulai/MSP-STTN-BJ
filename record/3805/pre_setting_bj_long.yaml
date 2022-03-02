@@ -51,8 +51,7 @@ TRAIN:
 
   #  LR_D: 0.001
   #  LR_G: 0.001
-  LR_C: 0.0001
-  LR_G: 0.0001
+  LR: 1e-4
   #LR_D: 0.1
   #LR_G: 0.1
 
@@ -70,8 +69,7 @@ TRAIN:
   MILE_STONE: '[15,25,45]'
   #  MILE_STONE: '[10,25]'
 
-  LOSS_SELF: 0.001
-  LOSS_GEN: 1.0
+  LOSS_MAIN: 1.0
   LOSS_TIME: 0.00001
   LOSS_TYP: 0.00001
 
