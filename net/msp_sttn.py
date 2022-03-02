@@ -116,10 +116,7 @@ class Patch_Transformer(nn.Module):
         K = self.embedding_K(c)  # (24, 32, 32, 32)
         V = self.embedding_V(c)
 
-        # B,C//num
         C = Q.shape[1]
-        #Q, K, V = patching_method(Q, K, V, B, C, self.patch_num_h, self.patch_num_w, self.patch_size_h,
-                                  #self.patch_size_w, self.patch_method)
         Q, K, V = patching_method(Q, K, V, B, T, C, self.patch_num_h, self.patch_num_w, self.patch_size_h,
                                   self.patch_size_w, self.patch_method)
 
@@ -296,9 +293,7 @@ class Multi_patch_transfomer(nn.Module):
         self.ffn = Conv_block(cnn_embedding_dim, cnn_embedding_dim, kernel_size=3, stride=1, dilation=1, residual=True)
 
 
-
     def forward(self, c, q, mask):
-
 
         x = q
         v,att_list = self.multi_patch_forward(c, q, mask)
@@ -478,18 +473,18 @@ class Prediction_Model(nn.Module):
         B, T, C, H, W = con.shape  # (6, 6, 2, 32, 32)
 
         if self.cross_att_num:
-            x_q = que.reshape(-1, self.input_channels, H, W)  # (B*T, 2, 32, 32)
+            q = que.reshape(-1, self.input_channels, H, W)  # (B*T, 2, 32, 32)
 
 
         a = avg.reshape(-1, self.input_channels, H, W)  # (B*T, 2, 32, 32)
         c = con.reshape(-1, self.input_channels, H, W)
         if self.cross_att_num:
-            x_q = x_q.reshape(-1, self.input_channels, H, W)
+            q = q.reshape(-1, self.input_channels, H, W)
 
         a = self.norm_bn(a)
         c = self.norm_bn(c)
         if self.cross_att_num:
-            x_q = self.norm_bn(x_q)
+            q = self.norm_bn(q)
 
 
         enc, c3, c2, c1 = self.encoder(a)  # (BT, 256, 32, 32)
@@ -500,7 +495,7 @@ class Prediction_Model(nn.Module):
         typ_cls_out = self.typ_class_pred(enc, avg)
 
         if self.cross_att_num:
-            enc_q, c3_q, c2_q, c1_q = self.encoder_q(x_q)  # (BT, 256, 32, 32)
+            enc_q, c3_q, c2_q, c1_q = self.encoder_q(q)  # (BT, 256, 32, 32)
 
 
         if self.mcof.pos_en:
@@ -552,21 +547,13 @@ class Prediction_Model(nn.Module):
     def pos_embedding(self, inp):
 
         B, T, C, H, W = inp.shape
-        # (1,T,32) # [B, T, 32, 32, 32]
         pos_t = self.loc_pos_enc(T).permute(1, 2, 0).unsqueeze(-1).type_as(inp)
-        #pos_t = pos_t.repeat(B, 1, 1, H, W).reshape(B * T, int(64//self.dim_factor), H, W)
         pos_t = pos_t.repeat(B, 1, 1, H, W).reshape(B * T, self.len_dim, H, W)
 
-        # H位置
-        # (1,H,112)->(112,H,1)  # [B, T, 112, 32, 32]
         spa_h = self.spa_pos_enc(H).permute(2, 1, 0).type_as(inp)
-        #spa_h = spa_h.repeat(B, T, 1, 1, W).reshape(B * T, int(224//self.dim_factor), H, W)
         spa_h = spa_h.repeat(B, T, 1, 1, W).reshape(B * T, self.spa_dim, H, W)
 
-        # W位置
-        # (1,W,112)->(112,1,W)  # [B, T, 112, 32, 32]
         spa_w = self.spa_pos_enc(W).permute(2, 0, 1).type_as(inp)
-        #spa_w = spa_w.repeat(B, T, 1, H, 1).reshape(B * T, int(224//self.dim_factor), H, W)
         spa_w = spa_w.repeat(B, T, 1, H, 1).reshape(B * T, self.spa_dim, H, W)
 
         spa = torch.cat([spa_h, spa_w], dim=1)
@@ -576,14 +563,10 @@ class Prediction_Model(nn.Module):
     def tim_class_pred(self, enc, inp):
         B, T, C, H, W = inp.shape
 
-
         enc = self.linear_tim(enc)
         enc = enc.reshape(B, T, C, H, W)
-
         enc = enc.reshape(B, -1)
         enc = self.feedforward_tim(enc)
-
-        #cls_out = self.softmax_tim(enc)
 
         return enc
 
@@ -592,11 +575,8 @@ class Prediction_Model(nn.Module):
 
         enc = self.linear_typ(enc)
         enc = enc.reshape(B, T, C, H, W)
-
         enc = enc.reshape(B, -1)
         enc = self.feedforward_typ(enc)
-
-        #typ_out = self.softmax_typ(enc)
 
         return enc
 
@@ -605,11 +585,9 @@ class Prediction_Model(nn.Module):
 
         enc = self.linear_tim_aux(enc)
         enc = enc.reshape(B, T, C, H, W)
-
         enc = enc.reshape(B, -1)
         enc = self.feedforward_tim_aux(enc)
 
-        #cls_out = self.softmax_tim(enc)
 
         return enc
 
@@ -621,8 +599,6 @@ class Prediction_Model(nn.Module):
 
         enc = enc.reshape(B, -1)
         enc = self.feedforward_typ_aux(enc)
-
-        #typ_out = self.softmax_typ(enc)
 
         return enc
 

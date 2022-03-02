@@ -99,6 +99,7 @@ def run(mcof):
     EPOCH_E = setting['TRAIN']['EPOCH']
     WARMUP_EPOCH = setting['TRAIN']['WARMUP_EPOCH']
     MILE_STONE = setting['TRAIN']['MILE_STONE']
+    LOSS = setting['TRAIN']['LOSS']
     LOSS_MAIN = setting['TRAIN']['LOSS_MAIN']
     LOSS_TIME = setting['TRAIN']['LOSS_TIME']
     LOSS_TYP = setting['TRAIN']['LOSS_TYP']
@@ -223,8 +224,11 @@ def run(mcof):
         scheduler = optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=warm_up_with_multistep_lr)
 
         #### Loss Function ####
-        # criterion = torch.nn.MSELoss()
-        criterion = torch.nn.L1Loss()
+        if LOSS == 'L1':
+            criterion = torch.nn.L1Loss()
+        elif LOSS == 'L2':
+            criterion = torch.nn.MSELoss()
+
         class_criterion = nn.CrossEntropyLoss()
 
         if Keep_Train:
@@ -441,7 +445,6 @@ def run(mcof):
                         que = que.to(device)
                         con = con.to(device)
 
-
                         gen_out, tim_out, typ_out,att_map = net(ave, que, con)
 
                         #eval
@@ -454,14 +457,13 @@ def run(mcof):
 
                         tar = tar.to(device)
 
-                        loss = criterion(oup, tar)  # 所有样本损失的平均值
+                        loss = criterion(oup, tar)
                         rmse_ = math.sqrt(loss) * (mmn.max - mmn.min) / 2. * ds_factory.dataset.m_factor
 
                         if IS_BEST:
 
                             if rmse_ > 70:
                                 print('->','timestamp',i,ts_Y_test[i],'rmse',rmse_,'abnormal')
-                                #rmse_ = 0
                             else:
                                 print('->','timestamp',i,ts_Y_test[i],'rmse',rmse_)
 
@@ -476,9 +478,8 @@ def run(mcof):
                         if IS_REMOVE and i in PROBLEM_LIST:
                             pass
                         else:
-                            mse += con.shape[0] * loss.item()  # 所有样本损失的总和
-                            mae += con.shape[0] * torch.mean(
-                                torch.abs(oup - tar)).item()  # mean()不加维度时，返回所有值的平均
+                            mse += con.shape[0] * loss.item()
+                            mae += con.shape[0] * torch.mean(torch.abs(oup - tar)).item()
 
                             ##niu
                             mse_in += con.shape[0] * torch.mean(
@@ -524,13 +525,11 @@ def run(mcof):
                 mse_out /= cnt
                 rmse_out = math.sqrt(mse_out) * (mmn.max - mmn.min) / 2. * ds_factory.dataset.m_factor
 
-                #info = "inflow rmse: %.5f    outflow rmse: %.4f" % (rmse_in, rmse_out)  ###xie
                 test_epoch_time = timeSince(test_t)
                 if EVAL_MODE == 'Iteration':
                     TOT = total_iteation
                 else:
                     TOT = EPOCH_E
-
 
                 min_idx = rmse_list.index(min(rmse_list))   ###xie
                 rmse_min = round(rmse_list[min_idx], 2)  ###xie

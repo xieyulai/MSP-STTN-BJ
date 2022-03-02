@@ -205,6 +205,7 @@ def run(mcof):
 
         #### Loss Function ####
         criterion = torch.nn.L1Loss()
+
         class_criterion = nn.CrossEntropyLoss()
 
 
