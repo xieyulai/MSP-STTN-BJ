@@ -90,7 +90,6 @@ def run(mcof):
 
     ####SETTING####
     DROPOUT = setting['TRAIN']['DROPOUT']
-    MERGE = setting['TRAIN']['MERGE']
     PATCH_LIST = setting['TRAIN']['PATCH_LIST']
     IS_USING_SKIP = setting['TRAIN']['IS_USING_SKIP']
     MODEL_DIM = setting['TRAIN']['MODEL_DIM']
@@ -200,7 +199,6 @@ def run(mcof):
             Is_mask=IS_MASK_ATT,  # 1
             Is_scaling=Is_scaling,  # 1
             Debugging=0,  # 0
-            Merge=MERGE,  # cross-attention
             Out_style=OUT_STYLE,
             Cat_style=CAT_STYLE,
             Is_aux=IS_AUX,
@@ -438,7 +436,6 @@ def run(mcof):
                     Is_mask=IS_MASK_ATT,
                     Is_scaling=Is_scaling,
                     Debugging=0,
-                    Merge=MERGE,
                     Out_style=OUT_STYLE,
                     Cat_style=CAT_STYLE,
                     Is_aux=IS_AUX,

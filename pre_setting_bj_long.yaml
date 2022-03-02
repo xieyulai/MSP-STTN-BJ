@@ -45,8 +45,6 @@ TRAIN:
   ATT_NUM: 1
   CROSS_ATT_NUM: 1
   IS_MASK_ATT: 1
-  #  MERGE: 'addition'
-  MERGE: 'cross-attention'
   IS_SCALE: 0
 
   IS_REDUCE: 1

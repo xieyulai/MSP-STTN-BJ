@@ -490,7 +490,7 @@ class Prediction_Model(nn.Module):
 
     def __init__(self, mcof, Length, Width, Height, Input_dim, Patch_list, Encoding_dim, Embedding_dim,
                  Dropout=0.2, Att_num=1, Cross_att_num=1, Using_skip=0, Debugging=0, Is_mask=0, residual=1,
-                 Is_scaling=1, Merge='addition', Norm_type='LN',**arg):
+                 Is_scaling=1,  Norm_type='LN',**arg):
 
         super().__init__()
 
@@ -511,7 +511,6 @@ class Prediction_Model(nn.Module):
         self.input_channels = Input_dim
         self.output_channels = Input_dim
 
-        self.merge_type = Merge
 
         encoding_w = Width
         encoding_h = Height
@@ -598,13 +597,6 @@ class Prediction_Model(nn.Module):
                                         tr_embedding_dim, Dropout, Debugging, self.patch_method, residual,
                                         is_mask=Is_mask, norm_type=Norm_type))
 
-        #self.feedforward_c = nn.Sequential(
-            #nn.Conv2d(tr_embedding_dim, tr_embedding_dim, kernel_size=3, padding=1),
-            #nn.LeakyReLU(0.2, inplace=True),
-            #nn.Conv2d(tr_embedding_dim, tr_embedding_dim, kernel_size=3, padding=1, dilation=1),
-            #nn.LeakyReLU(0.2, inplace=True),
-            #nn.Conv2d(tr_embedding_dim, tr_embedding_dim, kernel_size=3, padding=1),
-            #nn.LeakyReLU(0.2, inplace=True))
 
         self.dropout = nn.Dropout(p=Dropout)
 
@@ -909,7 +901,6 @@ if __name__ == '__main__':
         Is_mask=1,  # 1
         Is_scaling=1,  # 1
         Debugging=0,  # 0
-        Merge='cross-attention',  # cross-attention
         TRANS_RESIDUAL=1,
         Norm_type='LN',
         Out_style = 'seq',

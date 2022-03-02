@@ -75,8 +75,6 @@ TRAIN:
   IS_ATTENTION_RESIDUAL: 1
   IS_SCALE: 0
 
-  #MERGE: 'addition'
-  MERGE: 'cross-attention'
   #NORM_TYPE: 'BN'
   NORM_TYPE: 'LN'
 
