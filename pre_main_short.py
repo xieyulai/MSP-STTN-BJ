@@ -96,11 +96,11 @@ def run(mcof):
     ATT_NUM = setting['TRAIN']['ATT_NUM']
     CROSS_ATT_NUM = setting['TRAIN']['CROSS_ATT_NUM']
     IS_MASK_ATT = setting['TRAIN']['IS_MASK_ATT']
-    LR_G = setting['TRAIN']['LR_G']
+    LR = setting['TRAIN']['LR']
     EPOCH_E = setting['TRAIN']['EPOCH']
     WARMUP_EPOCH = setting['TRAIN']['WARMUP_EPOCH']
     MILE_STONE = setting['TRAIN']['MILE_STONE']
-    LOSS_GEN = setting['TRAIN']['LOSS_GEN']
+    LOSS_MAIN = setting['TRAIN']['LOSS_MAIN']
     LOSS_TIME = setting['TRAIN']['LOSS_TIME']
     LOSS_TYP = setting['TRAIN']['LOSS_TYP']
     LEN_CLOSE = setting['TRAIN']['LEN_CLOSE']
@@ -210,7 +210,7 @@ def run(mcof):
         device_ids = [i for i in range(torch.cuda.device_count())]
 
         #### Optimizer ####
-        optimizer = optim.Adam(net.parameters(), lr=eval(LR_G))
+        optimizer = optim.Adam(net.parameters(), lr=eval(LR))
 
         gamma = 0.5
         warm_up_with_multistep_lr = lambda epoch: epoch / int(WARMUP_EPOCH) if epoch <= int(
@@ -284,7 +284,7 @@ def run(mcof):
                 loss_tim = class_criterion(tim_out, tim_cls.long())
                 loss_typ = class_criterion(typ_out, typ_cls.long())
 
-                loss = LOSS_GEN * loss_gen + LOSS_TIME * loss_tim + LOSS_TYP * loss_typ
+                loss = LOSS_MAIN * loss_gen + LOSS_TIME * loss_tim + LOSS_TYP * loss_typ
 
                 loss.backward()
                 optimizer.step()
