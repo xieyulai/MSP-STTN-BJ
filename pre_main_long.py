@@ -90,7 +90,6 @@ def run(mcof):
     ATT_NUM = setting['TRAIN']['ATT_NUM']
     CROSS_ATT_NUM = setting['TRAIN']['CROSS_ATT_NUM']
     IS_MASK_ATT = setting['TRAIN']['IS_MASK_ATT']
-    IS_SCALE = setting['TRAIN']['IS_SCALE']
     LR_G = setting['TRAIN']['LR_G']
     EPOCH_E = setting['TRAIN']['EPOCH']
     WARMUP_EPOCH = setting['TRAIN']['WARMUP_EPOCH']
@@ -161,7 +160,6 @@ def run(mcof):
 
         P_list = eval(PATCH_LIST)
         # P_list = [[1,1],[3,4],[6,8],[12,16]]
-        Is_scaling = IS_SCALE
 
         from net.msp_sttn import Prediction_Model as Model
         #from net.niu_imp_pos_cl_heat2heat import Prediction_Model as Model
@@ -180,7 +178,6 @@ def run(mcof):
             Encoding_dim=MODEL_DIM,  # 256
             Embedding_dim=MODEL_DIM,  # 256
             Is_mask=IS_MASK_ATT,  # 1
-            Is_scaling=Is_scaling,  # 1
             Cat_style=CAT_STYLE,
             Is_aux=IS_AUX,
             ONLY_CONV6=ONLY_CONV6,
@@ -373,7 +370,6 @@ def run(mcof):
         input_channels = C
 
         P_list = eval(PATCH_LIST)
-        Is_scaling = IS_SCALE
 
         from net.msp_sttn import Prediction_Model as Model
 
@@ -404,7 +400,6 @@ def run(mcof):
                     Encoding_dim=MODEL_DIM,
                     Embedding_dim=MODEL_DIM,
                     Is_mask=IS_MASK_ATT,
-                    Is_scaling=Is_scaling,
                     Cat_style=CAT_STYLE,
                     Is_aux=IS_AUX,
                     ONLY_CONV6=ONLY_CONV6,
@@ -439,7 +434,6 @@ def run(mcof):
                 with torch.no_grad():
                     for i, data in enumerate(test_loader, 0):
 
-                        # (1,28,6,2,32,32) (1,28,6,2,32,32) (1,28,2,32,32)or(1,28,6,2,32,32) (1,28), (1,28)
                         con, ave, ave_q, label, tim_cls, typ_cls = data
 
                         if IS_SEQ:

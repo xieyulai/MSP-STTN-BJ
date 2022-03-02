@@ -331,7 +331,7 @@ class Prediction_Model(nn.Module):
 
     def __init__(self, mcof, Length, Width, Height, Input_dim, Patch_list, Encoding_dim, Embedding_dim,
                  Dropout=0.2, Att_num=1, Cross_att_num=1, Using_skip=0,  Is_mask=0, residual=1,
-                 Is_scaling=1,  Norm_type='LN',**arg):
+                 Norm_type='LN',**arg):
 
         super().__init__()
 
@@ -697,10 +697,7 @@ if __name__ == '__main__':
         Using_skip=1,  # 1
         Encoding_dim=256,  # 256
         Embedding_dim=256,  # 256
-        #Encoding_dim=384,  # 256
-        #Embedding_dim=384,  # 256
         Is_mask=1,  # 1
-        Is_scaling=1,  # 1
         TRANS_RESIDUAL=1,
         Norm_type='LN',
         Cat_style = 'cat',

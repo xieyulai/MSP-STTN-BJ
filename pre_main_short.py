@@ -178,7 +178,6 @@ def run(mcof):
         input_channels = C
 
         P_list = eval(PATCH_LIST)
-        Is_scaling = IS_SCALE
 
         from net.msp_sttn import Prediction_Model as Model
 
@@ -196,7 +195,6 @@ def run(mcof):
             Encoding_dim=MODEL_DIM,  # 256
             Embedding_dim=MODEL_DIM,  # 256
             Is_mask=IS_MASK_ATT,  # 1
-            Is_scaling=Is_scaling,  # 1
             Cat_style=CAT_STYLE,
             Is_aux=IS_AUX,
             ONLY_CONV6=ONLY_CONV6,
@@ -237,7 +235,6 @@ def run(mcof):
         else:
             pass
 
-        #### 训练设备准备
         net = net.to(device)
         net = nn.DataParallel(net, device_ids=device_ids)
 
@@ -277,7 +274,6 @@ def run(mcof):
 
                 out = out.reshape(B, T, C, H, W)
 
-                #### 将模型输出进行均值处理 ####
                 #train
                 if IS_SEQ:
                     oup = out[:,:SEQ_LEN_TRAIN]
@@ -398,7 +394,6 @@ def run(mcof):
         #### MODEL ####
         input_channels = C
         P_list = eval(PATCH_LIST)
-        Is_scaling = IS_SCALE
 
         from net.msp_sttn import Prediction_Model as Model
 
@@ -430,7 +425,6 @@ def run(mcof):
                     Encoding_dim=MODEL_DIM,
                     Embedding_dim=MODEL_DIM,
                     Is_mask=IS_MASK_ATT,
-                    Is_scaling=Is_scaling,
                     Cat_style=CAT_STYLE,
                     Is_aux=IS_AUX,
                     ONLY_CONV6=ONLY_CONV6,
@@ -465,7 +459,6 @@ def run(mcof):
                 with torch.no_grad():
                     for i, data in enumerate(test_loader, 0):
 
-                        # (1,28,6,2,32,32) (1,28,6,2,32,32) (1,28,2,32,32)or(1,28,6,2,32,32) (1,28), (1,28)
                         con, ave, ave_q, label, tim_cls, typ_cls = data
 
                         ave = ave.to(device)
