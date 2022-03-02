@@ -182,7 +182,7 @@ def run(mcof):
         P_list = eval(PATCH_LIST)
         Is_scaling = IS_SCALE
 
-        from net.imp_pos_cl_heat2heat import Prediction_Model as Model
+        from net.msp_sttn import Prediction_Model as Model
 
         net = Model(
             mcof,
@@ -406,7 +406,7 @@ def run(mcof):
         P_list = eval(PATCH_LIST)
         Is_scaling = IS_SCALE
 
-        from net.imp_pos_cl_heat2heat import Prediction_Model as Model
+        from net.msp_sttn import Prediction_Model as Model
 
         print('EVALUATION START')
         print('IS_REMOVE',IS_REMOVE)

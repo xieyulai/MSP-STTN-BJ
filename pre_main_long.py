@@ -83,7 +83,6 @@ def run(mcof):
             EVAL_BATCH = setting['TRAIN']['EVAL_BATCH']
 
     ####SETTING####
-    IS_BEST_EVAL = setting['TRAIN']['IS_BEST_EVAL']
     DROPOUT = setting['TRAIN']['DROPOUT']
     MERGE = setting['TRAIN']['MERGE']
     PATCH_LIST = setting['TRAIN']['PATCH_LIST']
@@ -149,11 +148,6 @@ def run(mcof):
         curr_time = strftime('%y%m%d%H%M%S', localtime())
         Keep_Train = mcof.keep_train
 
-        #### 数据加载和预处理 ###
-        # np.random.seed(seed)
-        # torch.manual_seed(seed)
-        # torch.backends.cudnn.deterministic = True
-        # torch.backends.cudnn.benchmark = False
 
         train_ds = ds_factory.get_train_dataset()
 
@@ -171,7 +165,7 @@ def run(mcof):
         # P_list = [[1,1],[3,4],[6,8],[12,16]]
         Is_scaling = IS_SCALE
 
-        from net.imp_pos_cl_heat2heat import Prediction_Model as Model
+        from net.msp_sttn import Prediction_Model as Model
         #from net.niu_imp_pos_cl_heat2heat import Prediction_Model as Model
 
         net = Model(
@@ -393,7 +387,7 @@ def run(mcof):
         P_list = eval(PATCH_LIST)
         Is_scaling = IS_SCALE
 
-        from net.imp_pos_cl_heat2heat import Prediction_Model as Model
+        from net.msp_sttn import Prediction_Model as Model
         #from net.niu_imp_pos_cl_heat2heat import Prediction_Model as Model
 
         print('EVALUATION START')
