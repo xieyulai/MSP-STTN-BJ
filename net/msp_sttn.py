@@ -56,58 +56,6 @@ class Conv_block(nn.Module):
 
         return x
 
-class Conv_block_3d(nn.Module):
-
-    def __init__(self, in_channels, out_channels, kernel_size, stride, dilation, residual=True, bn=True,
-                 activation='LeakyReLU'):
-
-        super().__init__()
-        self.is_bn = bn
-        padding = dilation * (kernel_size - 1) // 2
-        self.conv = nn.Conv3d(in_channels, out_channels, kernel_size, stride=stride, padding=padding, dilation=dilation)
-        self.bn = nn.BatchNorm3d(out_channels)
-
-        if not residual:
-            self.residual = lambda x: 0
-
-        elif (in_channels == out_channels) and (stride == 1):
-            self.residual = lambda x: x
-
-        else:
-            self.residual = nn.Sequential(
-                nn.Conv3d(
-                    in_channels,
-                    out_channels,
-                    kernel_size=1,
-                    stride=stride),
-                nn.BatchNorm3d(out_channels),
-            )
-
-        if activation == 'LeakyReLU':
-            self.activation = nn.LeakyReLU(0.2, inplace=True)
-        elif activation == 'Sigmoid':
-            self.activation = nn.Sigmoid()
-        elif activation == 'Tanh':
-            self.activation = nn.Tanh()
-
-    def forward(self, x):
-
-
-        x = x.permute(0,2,1,3,4)
-
-        res = self.residual(x)
-
-        x = self.conv(x)
-
-        if self.is_bn:
-            x = self.bn(x)
-
-        x = x + res
-        x = self.activation(x)
-
-        x = x.permute(0,2,1,3,4)
-
-        return x
 
 class Attention(nn.Module):
 
@@ -192,29 +140,12 @@ class Patch_Transformer(nn.Module):
         return x,atten_output_weight
 
 
-class OneHotEncoder(nn.Module):
-    def __init__(self, channel_dim,l,d,w,h):
-        super().__init__()
-        self.l = l
-        self.d = d
-        self.w = w
-        self.h = h
-        self.onehot_linear = nn.Linear(channel_dim, l*d*w*h)
-
-    def forward(self, inp):
-        inp = self.onehot_linear(inp)
-        inp = inp.reshape(-1,self.l,self.d,self.w,self.h)
-        return inp
-
 class Encoder(nn.Module):
 
-    def __init__(self, input_channels, encoding_dim,is_c3d=0):
+    def __init__(self, input_channels, encoding_dim):
         super().__init__()
 
-        if is_c3d:
-            CONV = Conv_block_3d
-        else:
-            CONV = Conv_block
+        CONV = Conv_block
 
 
         self.conv1 = CONV(input_channels, encoding_dim // 4, kernel_size=3, stride=1, dilation=1,
@@ -233,97 +164,17 @@ class Encoder(nn.Module):
         c4 = self.conv4(c3)
         return c4,c3,c2,c1
 
-class Single_Decoder(nn.Module):
-
-    def __init__(self, Length,output_channels, encoding_dim, Using_skip, Activation,Cat_style,is_c3d=0):
-
-        if is_c3d:
-            CONV = Conv_block_3d
-        else:
-            CONV = Conv_block
-
-        super().__init__()
-
-        self.Using_skip = Using_skip
-        self.len = Length
-
-        if Cat_style == 'cat_trans':
-            self.conv5 = CONV(encoding_dim, encoding_dim // 2, kernel_size=3, stride=1, dilation=1)
-            self.conv6 = CONV(encoding_dim // 1 if Using_skip else encoding_dim // 4,
-                                    encoding_dim // 4, kernel_size=3, stride=1, dilation=1)
-            self.conv7 = CONV(encoding_dim // 2 if Using_skip else encoding_dim // 8,
-                                    encoding_dim // 4, kernel_size=3, stride=1, dilation=1)
-            self.conv8 = CONV(encoding_dim // 2 if Using_skip else encoding_dim // 8,
-                                    output_channels, kernel_size=3, stride=1, dilation=1,
-                                    activation=Activation)
-        elif Cat_style == 'cat':
-
-            self.conv5 = CONV(encoding_dim, encoding_dim // 4, kernel_size=3, stride=1, dilation=1)
-            self.conv6 = CONV(encoding_dim // 2 if Using_skip else encoding_dim // 4,
-                                    encoding_dim // 8, kernel_size=3, stride=1, dilation=1)
-            self.conv7 = CONV(encoding_dim // 4 if Using_skip else encoding_dim // 8,
-                                    encoding_dim // 8, kernel_size=3, stride=1, dilation=1)
-            self.conv8 = CONV(encoding_dim // 4 if Using_skip else encoding_dim // 8,
-                                    output_channels, kernel_size=3, stride=1, dilation=1,
-                                    activation=Activation)
-
-    def forward(self, inp):
-
-        # [12,768,32,32] [12,64,32,32]
-        c4, c3,c2,c1 = inp
-
-        BT,C,H,W = c4.shape
-        c4 = c4.reshape(-1,self.len,C,H,W)
-        c4 = c4[:,0:1,...]
-        c4 = c4.reshape(-1,C,H,W)
-
-        BT,C,H,W = c3.shape
-        c3 = c3.reshape(-1,self.len,C,H,W)
-        c3 = c3[:,0:1,...]
-        c3 = c3.reshape(-1,C,H,W)
-
-        BT,C,H,W = c2.shape
-        c2 = c2.reshape(-1,self.len,C,H,W)
-        c2 = c2[:,0:1,...]
-        c2 = c2.reshape(-1,C,H,W)
-
-        BT,C,H,W = c1.shape
-        c1 = c1.reshape(-1,self.len,C,H,W)
-        c1 = c1[:,0:1,...]
-        c1 = c1.reshape(-1,C,H,W)
-
-
-        c5 = self.conv5(c4)
-        if self.Using_skip:
-            c5 = torch.cat([c5, c3], dim=1)
-
-        c6 = self.conv6(c5)
-
-        if self.Using_skip:
-            c6 = torch.cat([c6, c2], dim=1)
-
-        c7 = self.conv7(c6)
-        if self.Using_skip:
-            c7 = torch.cat([c7, c1], dim=1)
-
-        c8 = self.conv8(c7)
-
-        return c8
-
 
 class Decoder(nn.Module):
 
-    def __init__(self,Length, output_channels, encoding_dim, Using_skip, Activation,Cat_style,is_c3d=0,only_conv6=0):
+    def __init__(self,Length, output_channels, encoding_dim, Using_skip, Activation,Cat_style,only_conv6=0):
 
         super().__init__()
 
         self.Using_skip = Using_skip
         self.only_conv6 = only_conv6
 
-        if is_c3d:
-            CONV = Conv_block_3d
-        else:
-            CONV = Conv_block
+        CONV = Conv_block
 
         if Cat_style == 'cat_trans':
             if only_conv6:
@@ -368,12 +219,6 @@ class Decoder(nn.Module):
                                         output_channels, kernel_size=3, stride=1, dilation=1,
                                         activation=Activation)
 
-        #self.conv5 = Conv_block(encoding_dim, encoding_dim // 4, kernel_size=3, stride=1, dilation=1)
-        #self.conv6 = Conv_block(encoding_dim // 4, encoding_dim // 8, kernel_size=3, stride=1, dilation=1)
-        #self.conv7 = Conv_block(encoding_dim // 4 if Using_skip else encoding_dim // 8,
-                                #encoding_dim // 8, kernel_size=3, stride=1, dilation=1)
-        #self.conv8 = Conv_block(encoding_dim // 8, output_channels, kernel_size=3, stride=1, dilation=1,
-                                #activation=Activation)
 
 
 
@@ -496,10 +341,8 @@ class Prediction_Model(nn.Module):
 
         self.cross_att_num = Cross_att_num
 
-        self.out_style = arg['Out_style']
         self.cat_style = arg['Cat_style']
         self.is_aux = arg['Is_aux']
-        self.is_c3d = arg['IS_C3D']
         self.only_conv6 = arg['ONLY_CONV6']
         self.trans_residual = arg['TRANS_RESIDUAL']
         #self.one_hot = arg['ONE_HOT']
@@ -542,13 +385,11 @@ class Prediction_Model(nn.Module):
         self.norm_bn = nn.BatchNorm2d(Input_dim)
         self.norm_ln = nn.LayerNorm(encoding_h, encoding_w)
 
-        #if self.one_hot:
-            #self.one_hot_encoder = OneHotEncoder(48+4,Length,Input_dim,Width,Height)
 
-        self.encoder = Encoder(self.input_channels, encoding_dim,self.is_c3d)
-        self.encoder_c = Encoder(self.input_channels, encoding_dim,self.is_c3d)
+        self.encoder = Encoder(self.input_channels, encoding_dim)
+        self.encoder_c = Encoder(self.input_channels, encoding_dim)
         if self.cross_att_num:
-            self.encoder_q = Encoder(self.input_channels, encoding_dim,self.is_c3d)
+            self.encoder_q = Encoder(self.input_channels, encoding_dim)
 
         self.trans = Conv_block(encoding_dim*2, encoding_dim, kernel_size=1, stride=1, dilation=1, residual=self.trans_residual)
 
@@ -567,18 +408,11 @@ class Prediction_Model(nn.Module):
             tr_encoding_dim = encoding_dim
             tr_embedding_dim = embedding_dim
 
-        if self.out_style == 'seq':
-            OUT_ACT = 'Tanh'
-        else:
-            OUT_ACT = 'LeakyReLU'
 
         if self.cross_att_num:
             self.tran0 = Conv_block(encoding_dim, tr_encoding_dim, kernel_size=1, stride=1,dilation=1, residual=self.trans_residual)
 
-        if self.out_style == 'single':
-            self.decoder = Single_Decoder(Length,self.output_channels, tr_encoding_dim, Using_skip, 'Tanh',self.cat_style,self.is_c3d,self.only_conv6)
-        else:
-            self.decoder = Decoder(Length,self.output_channels, tr_encoding_dim, Using_skip, 'Tanh',self.cat_style,self.is_c3d,self.only_conv6)
+        self.decoder = Decoder(Length,self.output_channels, tr_encoding_dim, Using_skip, 'Tanh',self.cat_style,self.only_conv6)
 
         if 1:
             self.attention_c = nn.ModuleList()
@@ -682,10 +516,6 @@ class Prediction_Model(nn.Module):
         if self.cross_att_num:
             x_q = self.norm_bn(x_q)
 
-        if self.is_c3d:
-            x = x.reshape(B,T,C,H,W)
-            c = x.reshape(B,T,C,H,W)
-            x_q = x.reshape(B,T,C,H,W)
 
         enc, c3, c2, c1 = self.encoder(x)  # (BT, 256, 32, 32)
         enc_c, c3_c, c2_c, c1_c = self.encoder_c(c)
@@ -699,11 +529,6 @@ class Prediction_Model(nn.Module):
             #tim_cls_out += self.tim_class_pred(enc_q, avg)
             #typ_cls_out += self.typ_class_pred(enc_q, avg)
 
-        if self.is_c3d:
-            enc = enc.reshape(B*T,-1,H,W)
-            enc_c = enc_c.reshape(B*T,-1,H,W)
-            if self.cross_att_num:
-                enc_q = enc_q.reshape(B*T,-1,H,W)
 
         # 位置编码
         if self.mcof.pos_en:
@@ -743,29 +568,10 @@ class Prediction_Model(nn.Module):
             tim_cls_out = tim_cls_out + self.tim_class_pred_aux(att, avg)
             typ_cls_out = typ_cls_out + self.typ_class_pred_aux(att, avg)
 
-        if self.is_c3d:
-            att = att.reshape(B,T,-1,H,W)
-        # [12, 768, 32, 32]
         dec = self.decoder([att, c3,c2,c1])
 
         out = dec.reshape(B, -1, self.output_channels, H, W)
 
-        if self.out_style == 'mean':
-            out = torch.mean(out,1,True)
-        elif self.out_style == 'c3d':
-            out = self.conv3d(out)
-            out = self.conv3d_act(out)
-        elif self.out_style == 'fc':
-            out = out.permute(0,2,3,4,1)
-            out = self.lin_out(out)
-            out = out.permute(0,4,1,2,3)
-            out = self.conv3d_act(out)
-        elif self.out_style == 'seq':
-            pass
-        elif self.out_style == 'single':
-            avg = avg[:,0:1,...]
-        else:
-            pass
 
         out = out + avg
 
@@ -903,11 +709,9 @@ if __name__ == '__main__':
         Debugging=0,  # 0
         TRANS_RESIDUAL=1,
         Norm_type='LN',
-        Out_style = 'seq',
         Cat_style = 'cat',
         #Cat_style = 'cat_trans',
         Is_aux=1,
-        IS_C3D=0,
         ONE_HOT=0,
         ONLY_CONV6=1,
     )

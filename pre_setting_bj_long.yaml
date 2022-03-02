@@ -15,7 +15,6 @@ TRAIN:
 
   IS_AUX: 1
   LENGTH: 6
-  IS_C3D: 0
   IS_SEQ: 0
   OUT_STYLE: seq
   CAT_STYLE: cat

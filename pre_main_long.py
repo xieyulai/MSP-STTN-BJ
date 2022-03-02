@@ -106,7 +106,6 @@ def run(mcof):
     OUT_STYLE = setting['TRAIN']['OUT_STYLE']
     CAT_STYLE = setting['TRAIN']['CAT_STYLE']
     IS_AUX = setting['TRAIN']['IS_AUX']
-    IS_C3D = setting['TRAIN']['IS_C3D']
     ONLY_CONV6 = setting['TRAIN']['ONLY_CONV6']
     TRANS_RESIDUAL = setting['TRAIN']['TRANS_RESIDUAL']
     ITERATION_STEP = setting['TRAIN']['ITERATION_STEP']
@@ -183,10 +182,8 @@ def run(mcof):
             Is_mask=IS_MASK_ATT,  # 1
             Is_scaling=Is_scaling,  # 1
             Debugging=0,  # 0
-            Out_style=OUT_STYLE,
             Cat_style=CAT_STYLE,
             Is_aux=IS_AUX,
-            IS_C3D=IS_C3D,
             ONLY_CONV6=ONLY_CONV6,
             TRANS_RESIDUAL=TRANS_RESIDUAL,
         )
@@ -417,7 +414,6 @@ def run(mcof):
                     Is_mask=IS_MASK_ATT,
                     Is_scaling=Is_scaling,
                     Debugging=0,
-                    Out_style=OUT_STYLE,
                     Cat_style=CAT_STYLE,
                     Is_aux=IS_AUX,
                     IS_C3D=IS_C3D,
