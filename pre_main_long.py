@@ -90,7 +90,6 @@ def run(mcof):
     ATT_NUM = setting['TRAIN']['ATT_NUM']
     CROSS_ATT_NUM = setting['TRAIN']['CROSS_ATT_NUM']
     IS_MASK_ATT = setting['TRAIN']['IS_MASK_ATT']
-    print(setting)
     LR = setting['TRAIN']['LR']
     EPOCH_E = setting['TRAIN']['EPOCH']
     WARMUP_EPOCH = setting['TRAIN']['WARMUP_EPOCH']
@@ -237,11 +236,11 @@ def run(mcof):
             epoch_rmse_list = []
             for i, data in enumerate(train_loader):
 
-                con, ave, ave_q, label, tim_cls, typ_cls = data
+                con, ave, que, label, tim_cls, typ_cls = data
 
                 B, T, C, H, W = con.shape
                 ave = ave.to(device)
-                ave_q = ave_q.to(device)
+                que = que.to(device)
                 con = con.to(device)
                 label = label.to(device)
                 tim_cls = tim_cls.squeeze().to(device)
@@ -249,7 +248,7 @@ def run(mcof):
 
                 optimizer.zero_grad()
 
-                out, tim_out, typ_out,att_map = net(ave, ave_q, con)
+                out, tim_out, typ_out,att_map = net(ave, que, con)
 
                 out = out.reshape(B, T, C, H, W)
 
@@ -268,7 +267,7 @@ def run(mcof):
                 optimizer.step()
 
                 net.eval()
-                out, tim_out, typ_out,att_map = net(ave, ave_q, con)
+                out, tim_out, typ_out,att_map = net(ave, que, con)
 
                 _, out_tim = torch.max(torch.softmax(tim_out, 1), 1)
                 out_tim = out_tim.cpu().numpy()
@@ -368,13 +367,6 @@ def run(mcof):
         )
         print('len_test_loader',len(test_loader))
 
-        #### MODEL ####
-        #input_channels = C
-
-        #P_list = eval(PATCH_LIST)
-
-        #from net.msp_sttn import Prediction_Model as Model
-
         print('EVALUATION START')
         print('IS_REMOVE',IS_REMOVE)
         print('-' * 30)
@@ -388,25 +380,6 @@ def run(mcof):
             PROBLEM_LIST = [556, 748, 772, 773, 774, 775, 776, 777, 778, 779, 780, 781, 782, 783, 784, 785, 786, 787, 788, 789, 790, 791, 792, 793, 794, 795, 796, 844, 892]
             for epoch in range(EVAL_START_EPOCH, EPOCH_E):
 
-                #net = Model(
-                    #mcof,
-                    #Length=LENGTH,
-                    #Width=W,
-                    #Height=H,
-                    #Input_dim=input_channels,
-                    #Patch_list=P_list,
-                    #Dropout=DROPOUT,
-                    #Att_num=ATT_NUM,
-                    #Cross_att_num=CROSS_ATT_NUM,
-                    #Using_skip=IS_USING_SKIP,
-                    #Encoding_dim=MODEL_DIM,
-                    #Embedding_dim=MODEL_DIM,
-                    #Is_mask=IS_MASK_ATT,
-                    #Cat_style=CAT_STYLE,
-                    #Is_aux=IS_AUX,
-                    #ONLY_CONV6=ONLY_CONV6,
-                    #TRANS_RESIDUAL=TRANS_RESIDUAL,
-                #)
 
                 if EVAL_MODE == 'Iteration':
                     model_path = './model/Imp_{}/pre_model_it_{}.pth'.format(RECORD_ID,(epoch + 1)*ITERATION_STEP)
@@ -436,7 +409,7 @@ def run(mcof):
                 with torch.no_grad():
                     for i, data in enumerate(test_loader, 0):
 
-                        con, ave, ave_q, label, tim_cls, typ_cls = data
+                        con, ave, que, label, tim_cls, typ_cls = data
 
                         if IS_SEQ:
                             tar = label[:, 0]
@@ -444,19 +417,17 @@ def run(mcof):
                             tar = label  ##niu
 
                         ave = ave.to(device)
-                        ave_q = ave_q.to(device)
+                        que = que.to(device)
                         tar = tar.to(device)
                         con = con.to(device)
 
-                        gen_out, tim_out, typ_out,att_map = net(ave, ave_q, con)
-                        # (2,32,32)
+                        gen_out, tim_out, typ_out,att_map = net(ave, que, con)
                         oup = gen_out[:, 0]
 
                         loss = criterion(oup, tar)  # 所有样本损失的平均值
                         rmse_ = math.sqrt(loss) * (mmn.max - mmn.min) / 2. * ds_factory.dataset.m_factor
-                        #print('->','timestamp',ts_Y_test[i],i//48,i%48,'rmse',rmse_)
-                        if IS_BEST:
 
+                        if IS_BEST:
                             if rmse_ > 70:
                                 print('->','timestamp',i,ts_Y_test[i],'rmse',rmse_,'abnormal')
                                 rmse_ = 0
@@ -471,7 +442,6 @@ def run(mcof):
                             mae += con.shape[0] * torch.mean(
                                 torch.abs(oup - tar)).item()  # mean()不加维度时，返回所有值的平均
 
-                            ##niu
                             mse_in += con.shape[0] * torch.mean(
                                 (tar[:, 0] - oup[:, 0]) * (tar[:, 0] - oup[:, 0])).item()
                             mse_out += con.shape[0] * torch.mean(
@@ -505,8 +475,6 @@ def run(mcof):
 
                 mse /= cnt
                 rmse = math.sqrt(mse) * (mmn.max - mmn.min) / 2. * ds_factory.dataset.m_factor
-                #print("mae: %.4f" % (mae))
-                #print("rmse: %.4f" % (rmse))
 
                 rmse_list.append(rmse)  ##xie
                 mae_list.append(mae)  ##xie
@@ -516,9 +484,7 @@ def run(mcof):
                 mse_out /= cnt
                 rmse_out = math.sqrt(mse_out) * (mmn.max - mmn.min) / 2. * ds_factory.dataset.m_factor
 
-                #info = "inflow rmse: %.5f    outflow rmse: %.4f" % (rmse_in, rmse_out)  ###xie
                 info = "EPOCH:<%d> MAE: %.4f RMSE: [%.4f] IN: %.4f OUT: %.4f TIM: %.4f" % (epoch+1,mae,rmse,rmse_in, rmse_out,tim_acc)###xie
-                #record.write(info + '\n')  ###xie
 
                 min_idx = rmse_list.index(min(rmse_list))  ###xie
                 rmse_min = round(rmse_list[min_idx], 2)  ###xie

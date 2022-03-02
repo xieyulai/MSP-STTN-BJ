@@ -481,18 +481,18 @@ class Prediction_Model(nn.Module):
             x_q = que.reshape(-1, self.input_channels, H, W)  # (B*T, 2, 32, 32)
 
 
-        x = avg.reshape(-1, self.input_channels, H, W)  # (B*T, 2, 32, 32)
+        a = avg.reshape(-1, self.input_channels, H, W)  # (B*T, 2, 32, 32)
         c = con.reshape(-1, self.input_channels, H, W)
         if self.cross_att_num:
             x_q = x_q.reshape(-1, self.input_channels, H, W)
 
-        x = self.norm_bn(x)
+        a = self.norm_bn(a)
         c = self.norm_bn(c)
         if self.cross_att_num:
             x_q = self.norm_bn(x_q)
 
 
-        enc, c3, c2, c1 = self.encoder(x)  # (BT, 256, 32, 32)
+        enc, c3, c2, c1 = self.encoder(a)  # (BT, 256, 32, 32)
         enc_c, c3_c, c2_c, c1_c = self.encoder_c(c)
 
 
@@ -626,18 +626,6 @@ class Prediction_Model(nn.Module):
 
         return enc
 
-class TEST(nn.Module):
-    def __init__(self,d,n):
-        super().__init__()
-        self.lin1 = nn.Linear(d, n)
-        self.lin2 = nn.Linear(n, d)
-        #self.lin1 = nn.Linear(64, 100)
-        #self.lin2 = nn.Linear(100, 64)
-
-    def forward(self,x):
-        x = self.lin1(x)
-        x = self.lin2(x)
-        return x
 
 
 if __name__ == '__main__':

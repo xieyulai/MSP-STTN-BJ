@@ -259,12 +259,11 @@ def run(mcof):
             epoch_rmse_list = []
             for i, data in enumerate(train_loader):
 
-                con, ave, ave_q, label, tim_cls, typ_cls = data
-
+                con, ave, que, label, tim_cls, typ_cls = data
 
                 B, T, C, H, W = con.shape
                 ave = ave.to(device)
-                ave_q = ave_q.to(device)
+                que = que.to(device)
                 con = con.to(device)
                 label = label.to(device)
                 tim_cls = tim_cls.squeeze().to(device)
@@ -272,8 +271,7 @@ def run(mcof):
 
                 optimizer.zero_grad()
 
-
-                out, tim_out, typ_out,att_map = net(ave, ave_q, con)
+                out, tim_out, typ_out,att_map = net(ave, que, con)
 
                 out = out.reshape(B, T, C, H, W)
 
@@ -295,7 +293,7 @@ def run(mcof):
                 optimizer.step()
 
                 net.eval()
-                out, tim_out, typ_out,att_map = net(ave, ave_q, con)
+                out, tim_out, typ_out,att_map = net(ave, que, con)
 
                 _, out_tim = torch.max(torch.softmax(tim_out, 1), 1)
                 out_tim = out_tim.cpu().numpy()
@@ -394,11 +392,6 @@ def run(mcof):
             num_workers=1
         )
 
-        ##### MODEL ####
-        #input_channels = C
-        #P_list = eval(PATCH_LIST)
-
-        #from net.msp_sttn import Prediction_Model as Model
 
         print('EVALUATION START')
         print('IS_REMOVE',IS_REMOVE)
@@ -413,26 +406,6 @@ def run(mcof):
             mae_list = []  ###xie
             for epoch in range(EVAL_START_EPOCH, EPOCH_E):
                 test_t = time.time()
-
-                #net = Model(
-                    #mcof,
-                    #Length=LENGTH,
-                    #Width=W,
-                    #Height=H,
-                    #Input_dim=input_channels,
-                    #Patch_list=P_list,
-                    #Dropout=DROPOUT,
-                    #Att_num=ATT_NUM,
-                    #Cross_att_num=CROSS_ATT_NUM,
-                    #Using_skip=IS_USING_SKIP,
-                    #Encoding_dim=MODEL_DIM,
-                    #Embedding_dim=MODEL_DIM,
-                    #Is_mask=IS_MASK_ATT,
-                    #Cat_style=CAT_STYLE,
-                    #Is_aux=IS_AUX,
-                    #ONLY_CONV6=ONLY_CONV6,
-                    #TRANS_RESIDUAL=TRANS_RESIDUAL,
-                #)
 
                 if EVAL_MODE == 'Iteration':
                     model_path = './model/Imp_{}/pre_model_it_{}.pth'.format(RECORD_ID,(epoch + 1)*ITERATION_STEP)
@@ -462,14 +435,14 @@ def run(mcof):
                 with torch.no_grad():
                     for i, data in enumerate(test_loader, 0):
 
-                        con, ave, ave_q, label, tim_cls, typ_cls = data
+                        con, ave, que, label, tim_cls, typ_cls = data
 
                         ave = ave.to(device)
-                        ave_q = ave_q.to(device)
+                        que = que.to(device)
                         con = con.to(device)
 
 
-                        gen_out, tim_out, typ_out,att_map = net(ave, ave_q, con)
+                        gen_out, tim_out, typ_out,att_map = net(ave, que, con)
 
                         #eval
                         if IS_SEQ:
