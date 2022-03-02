@@ -1,0 +1,3 @@
+ =0547= Epoch:19/19 ep:- MAE: 9.5114 RMSE: [16.5218] IN: 14.3467 OUT: 16.8870 TIM: 100.0000 Dur:2m 6s Best:MAE:9.51,RMSE:16.52,Epoch:19,EP:-
+-----------------------
+ =0547= Epoch:19/19 ep:- MAE: 9.5114 RMSE: [16.5218] IN: 14.3467 OUT: 16.8870 TIM: 100.0000 Dur:2m 6s Best:MAE:9.51,RMSE:16.52,Epoch:19,EP:-

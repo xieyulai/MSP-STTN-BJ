@@ -1,0 +1,3 @@
+ =0548= Epoch:41/41 ep:- MAE: 10.0695 RMSE: [17.9497] IN: 14.6380 OUT: 16.9345 TIM: 100.0000 Dur:2m 20s Best:MAE:10.07,RMSE:17.95,Epoch:41,EP:-
+-----------------------
+ =0548= Epoch:41/41 ep:- MAE: 10.0695 RMSE: [17.9497] IN: 14.6380 OUT: 16.9345 TIM: 100.0000 Dur:2m 20s Best:MAE:10.07,RMSE:17.95,Epoch:41,EP:-

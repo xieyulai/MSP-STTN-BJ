@@ -1,0 +1,3 @@
+ =1545= Epoch:23/23 ep:- MAE: 9.3664 RMSE: [16.5300] IN: 15.5440 OUT: 17.4604 TIM: 100.0000 Dur:2m 51s Best:MAE:9.37,RMSE:16.53,Epoch:23,EP:-
+-----------------------
+ =1545= Epoch:23/23 ep:- MAE: 9.3664 RMSE: [16.5300] IN: 15.5440 OUT: 17.4604 TIM: 100.0000 Dur:2m 51s Best:MAE:9.37,RMSE:16.53,Epoch:23,EP:-

@@ -1,0 +1,80 @@
+TRAIN:
+  IS_BEST_EVAL: 0
+  IS_TEST: 0
+  DROPOUT: 0.0
+
+  TRANS_RESIDUAL: 0
+
+  EVAL_MODE: Epoch
+  EVAL_START_EPOCH: 21
+  ITERATION_STEP: 100
+
+  LEN_CLOSE: 0
+  LEN_PERIOD: 1
+  LEN_TREND: 1
+
+  IS_AUX: 1
+  LENGTH: 6
+  IS_C3D: 0
+  IS_SEQ: 0
+  OUT_STYLE: seq
+  CAT_STYLE: cat
+  #CAT_STYLE: cat_trans
+
+  #  PATCH_LIST:  '[[3,8],[3,16],[6,4],[6,16],[12,8],[3,4],[6,8],[12,16]]'
+  #  PATCH_LIST: '[[2,16],[4,4],[4,8],[4,16],[8,8],[8,16],[8,32],[16,16]]'
+  #  PATCH_LIST: '[[2,2],[4,4],[8,8],[16,16],[4,8],[16,4],[2,8],[8,16]]'
+  # PATCH_LIST: '[[16,16],[16,16],[16,16],[16,16],[16,16],[16,16],[16,16],[16,16]]'
+  #PATCH_LIST: '[[2,2],[2,2],[4,4],[4,4],[8,8],[8,8],[16,16],[16,16]]'
+  #PATCH_LIST: '[[2,2],[4,4],[4,4],[4,4],[4,4],[4,4],[4,4],[4,4]]'
+  PATCH_LIST: '[[2,2],[2,2],[4,4],[4,4],[8,8],[8,8],[16,16],[16,16]]'
+  # PATCH_LIST: '[[2,2],[2,2],[4,4],[4,4],[8,8],[8,8],[16,16],[16,16],[1,4],[4,1],[2,8],[8,2],[4,16],[16,4],[8,32],[32,8]]'
+  #PATCH_LIST:  '[[1,1],[3,4],[6,8],[12,16]]'
+
+  BATCH_SIZE: 12
+  #BATCH_SIZE: 32
+#  BATCH_SIZE: 24
+  EVAL_BATCH: 1
+
+  IS_USING_SKIP: 1
+
+  #MODEL_DIM: 1024
+  #MODEL_DIM: 256
+  MODEL_DIM: 256
+  ATT_NUM: 4
+  CROSS_ATT_NUM: 4
+  IS_MASK_ATT: 1
+  #  MERGE: 'addition'
+  MERGE: 'cross-attention'
+  IS_SCALE: 0
+
+  IS_REDUCE: 1
+
+  #  LR_D: 0.001
+  #  LR_G: 0.001
+  LR_C: 0.0001
+  LR_G: 0.0001
+  #LR_D: 0.1
+  #LR_G: 0.1
+
+  #EPOCH: 50
+  EPOCH: 22
+  #EPOCH: 90
+  #EPOCH: 30
+
+  WARMUP_EPOCH: 5
+
+  #MILE_STONE: '[30,35]'
+  #MILE_STONE: '[15,25,45]'
+  #MILE_STONE: '[10,25,40]'
+  #MILE_STONE: '[15,25,45]'
+  MILE_STONE: '[15,25,45]'
+  #  MILE_STONE: '[10,25]'
+
+  LOSS_SELF: 0.001
+  LOSS_GEN: 1.0
+  LOSS_TIME: 0.00001
+  LOSS_TYP: 0.00001
+
+
+  ONLY_CONV6: 1

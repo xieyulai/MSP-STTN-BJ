@@ -1,0 +1,3 @@
+ =5547= Epoch:27/27 ep:- MAE: 9.7671 RMSE: [17.1939] IN: 14.4776 OUT: 16.8156 TIM: 100.0000 Dur:2m 40s Best:MAE:9.77,RMSE:17.19,Epoch:27,EP:-
+-----------------------
+ =5547= Epoch:27/27 ep:- MAE: 9.7671 RMSE: [17.1939] IN: 14.4776 OUT: 16.8156 TIM: 100.0000 Dur:2m 40s Best:MAE:9.77,RMSE:17.19,Epoch:27,EP:-
