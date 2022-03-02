@@ -416,7 +416,6 @@ def run(mcof):
                     Debugging=0,
                     Cat_style=CAT_STYLE,
                     Is_aux=IS_AUX,
-                    IS_C3D=IS_C3D,
                     ONLY_CONV6=ONLY_CONV6,
                     TRANS_RESIDUAL=TRANS_RESIDUAL,
                 )
