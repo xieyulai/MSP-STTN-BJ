@@ -102,7 +102,6 @@ def run(mcof):
     LEN_TREND = setting['TRAIN']['LEN_TREND']
     LENGTH = setting['TRAIN']['LENGTH']
     IS_SEQ = setting['TRAIN']['IS_SEQ']
-    OUT_STYLE = setting['TRAIN']['OUT_STYLE']
     CAT_STYLE = setting['TRAIN']['CAT_STYLE']
     IS_AUX = setting['TRAIN']['IS_AUX']
     ONLY_CONV6 = setting['TRAIN']['ONLY_CONV6']

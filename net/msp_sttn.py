@@ -222,7 +222,6 @@ class Decoder(nn.Module):
 
     def forward(self, inp):
 
-        # [12,768,32,32] [12,64,32,32]
         c4, c3,c2,c1 = inp
 
         c5 = self.conv5(c4)
@@ -300,10 +299,6 @@ class Multi_patch_transfomer(nn.Module):
 
     def forward(self, c, q, mask):
 
-        #x = q
-        ## att = self.residual(x) + self.dropout(self.multi_patch_forward(c, q, mask))
-        #att = self.multi_patch_forward(c, q, mask)
-        ## att = self.norm(att)
 
         x = q
         v,att_list = self.multi_patch_forward(c, q, mask)
@@ -356,9 +351,6 @@ class Prediction_Model(nn.Module):
         encoding_dim = Encoding_dim  # 256
         embedding_dim = Embedding_dim  # 256
 
-        #self.dim_factor = 256/Embedding_dim
-        #self.dim_factor = 128/Embedding_dim
-        #self.dim_factor = 512/Embedding_dim
         if self.cat_style == 'cat':
             self.len_dim = 64
             self.spa_dim = (2*encoding_dim - self.len_dim)//2
@@ -371,9 +363,6 @@ class Prediction_Model(nn.Module):
         else:
             self.residual = lambda x: x
 
-        # 返回的是带有位置编码信息的特征矩阵
-        #self.loc_pos_enc = LocPositionalEncoder(int(64/self.dim_factor), 0.3)  # (32,*,128)
-        #self.spa_pos_enc = LocPositionalEncoder(int(224/self.dim_factor), 0.3)
         self.loc_pos_enc = LocPositionalEncoder(self.len_dim, 0.3)  # (32,*,128)
         self.spa_pos_enc = LocPositionalEncoder(self.spa_dim, 0.3)
 
@@ -477,29 +466,20 @@ class Prediction_Model(nn.Module):
             nn.LeakyReLU(0.2, inplace=True),
             nn.Dropout(p=Dropout))
 
-        #self.softmax_tim = nn.Softmax(dim=1)
-        #self.softmax_typ = nn.Softmax(dim=1)
 
         self.conv3d = nn.Conv3d(6,1,(1,1,1),stride=1,padding=(0,0,0))
         self.conv3d_act = nn.Tanh()
 
         self.lin_out = nn.Linear(6,1)
 
-    #def forward(self, inp, inp_c):
     def forward(self, avg, que, con):
 
         # B,T,C,H,W -> BT,C,H,W
         B, T, C, H, W = con.shape  # (6, 6, 2, 32, 32)
 
         if self.cross_att_num:
-            #avg [0,1,2,3,4,5]
-            #con [-1,-2,-3,-4,-0d,-0w]
-            #que [0,1,2,3,-0d,-0w]
-            #x_q = torch.cat((avg[:,0:4,...],con[:,4:6,...]),dim=1)
             x_q = que.reshape(-1, self.input_channels, H, W)  # (B*T, 2, 32, 32)
 
-        #if self.one_hot:
-            #avg = self.one_hot_encoder(avg)
 
         x = avg.reshape(-1, self.input_channels, H, W)  # (B*T, 2, 32, 32)
         c = con.reshape(-1, self.input_channels, H, W)
@@ -521,11 +501,8 @@ class Prediction_Model(nn.Module):
 
         if self.cross_att_num:
             enc_q, c3_q, c2_q, c1_q = self.encoder_q(x_q)  # (BT, 256, 32, 32)
-            #tim_cls_out += self.tim_class_pred(enc_q, avg)
-            #typ_cls_out += self.typ_class_pred(enc_q, avg)
 
 
-        # 位置编码
         if self.mcof.pos_en:
             seq_pos, spa_pos = self.pos_embedding(avg)
 
@@ -680,10 +657,6 @@ if __name__ == '__main__':
     parser.add_argument('--pos_en_mode', type=str, default='cat', help='positional encoding mode')
     mcof = parser.parse_args()
 
-    #PATCH_LIST = [[2, 16], [4, 4], [4, 8], [4, 16], [8, 8], [8, 16], [8, 32], [16, 16]]
-    #PATCH_LIST = [[2,2]]
-    #PATCH_LIST = [[16,16]]
-    #PATCH_LIST = [[8,8]]
     PATCH_LIST = [[4,4]]
     net = Prediction_Model(
         mcof=mcof,
@@ -706,21 +679,9 @@ if __name__ == '__main__':
         ONLY_CONV6=1,
     )
 
-    #Cat_style = 'cat',
-    #Cat_style = 'cat_trans',
-    #OUT_STYLE: c3d
-    #OUT_STYLE: seq
-    #OUT_STYLE: mean
-    #OUT_STYLE: fc
-    #OUT_STYLE: single
 
-    #from thop import profile
-    #from thop import clever_format
-    #from torchstat import stat
     from torchsummaryX import summary
 
-    #input = torch.randn(1, 12, 1, 32, 32)
-    #context = torch.randn(1, 12, 1, 32, 32)
 
     input_c = torch.randn(4, 6, 2, 32, 32)
     context_c = torch.randn(4, 6, 2, 32, 32)
@@ -728,37 +689,7 @@ if __name__ == '__main__':
     input_q = torch.randn(4, 6, 2, 32, 32)
     context_q = torch.randn(4, 6, 2, 32, 32)
 
-    # output = net(input,context)
-    # print(output.shape)
 
     out, tim_cls_out, typ_cls_out,att_map = net(input_c, context_c, context_q)
     print('=============')
     print(out.shape, tim_cls_out.shape, typ_cls_out.shape)
-    #torch.save(net.cpu().state_dict(), 'model.pth')
-
-    #macs,params = profile(net,inputs=(input_c,context_c))
-    #macs,params = clever_format([macs,params],"%.3f")
-    #print(macs)
-    #print(params)
-
-    #summary(net,torch.zeros((1,6,2,32,32)),torch.zeros((1,6,2,32,32)),torch.zeros((1,6,2,32,32)))
-
-
-    #d = 1024
-    #n = 1536
-
-    #d = 65536
-    #n = 24
-    #test = TEST(d=d,n=n)
-    ##summary(test,torch.zeros(1,n,d))
-
-    ##flops,params = profile(test,inputs=(torch.zeros(1,n,d)))
-    ##flops,params = clever_format([flops,params],"%.3f")
-    ##print(flops,params)
-
-    #conv1 = Conv_block_3d(2, 64, kernel_size=3, stride=1, dilation=1, residual=False)
-    #x = torch.randn(1, 6, 2, 32, 32)
-    #y = conv1(x)
-    #print(y.shape)
-
-

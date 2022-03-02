@@ -110,7 +110,6 @@ def run(mcof):
     IS_SEQ = setting['TRAIN']['IS_SEQ']
     SEQ_LEN_TEST = setting['TRAIN']['SEQ_LEN_TEST']
     SEQ_LEN_TRAIN = setting['TRAIN']['SEQ_LEN_TRAIN']
-    OUT_STYLE = setting['TRAIN']['OUT_STYLE']
     CAT_STYLE = setting['TRAIN']['CAT_STYLE']
     IS_AUX = setting['TRAIN']['IS_AUX']
     ONLY_CONV6 = setting['TRAIN']['ONLY_CONV6']
