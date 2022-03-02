@@ -181,7 +181,6 @@ def run(mcof):
             Embedding_dim=MODEL_DIM,  # 256
             Is_mask=IS_MASK_ATT,  # 1
             Is_scaling=Is_scaling,  # 1
-            Debugging=0,  # 0
             Cat_style=CAT_STYLE,
             Is_aux=IS_AUX,
             ONLY_CONV6=ONLY_CONV6,
@@ -255,12 +254,11 @@ def run(mcof):
 
                 out = out.reshape(B, T, C, H, W)
 
-                #### 将模型输出进行均值处理 ####
                 if not IS_SEQ:
                     oup = out[:, 0].to(device)
                 else:
                     oup = out
-                # oup = output[:, 0].to(device)
+
                 loss_gen = criterion(oup, label)
                 loss_tim = class_criterion(tim_out, tim_cls.long())
                 loss_typ = class_criterion(typ_out, typ_cls.long())
@@ -287,7 +285,6 @@ def run(mcof):
                 rmse = VALRMSE(oup, label, ds_factory.ds, ds_factory.dataset.m_factor)
                 epoch_rmse_list.append(rmse.item())
 
-                #if it % 20 == 0:
                 if i % 100 == 0:
                     c_lr = scheduler.get_last_lr()
                     loss_info = 'TT:{:.6f},G: {:.6f},C:{:.6f},T:{:.6f}'.format(loss.item(), loss_gen.item(),loss_tim.item(), loss_typ.item())
@@ -299,7 +296,6 @@ def run(mcof):
                     info_matrix = "[epoch %d][%d/%d] mse: %.4f rmse: %.4f RECORD:%s" % (
                         epoch, i + 1, len(train_loader), loss_gen.item(), rmse.item(),RECORD_ID)
                     record.write(info_matrix + '\n')
-                    #print(info_matrix)
 
 
                 if it % ITERATION_STEP == 0:
@@ -341,9 +337,6 @@ def run(mcof):
 
     if IS_VAL:
 
-
-
-        #train_len = 13728
         train_len = 13668
         epoch_iteartion = train_len//BATCH_SIZE
         total_iteation = EPOCH_E * epoch_iteartion
@@ -383,7 +376,6 @@ def run(mcof):
         Is_scaling = IS_SCALE
 
         from net.msp_sttn import Prediction_Model as Model
-        #from net.niu_imp_pos_cl_heat2heat import Prediction_Model as Model
 
         print('EVALUATION START')
         print('IS_REMOVE',IS_REMOVE)
@@ -413,7 +405,6 @@ def run(mcof):
                     Embedding_dim=MODEL_DIM,
                     Is_mask=IS_MASK_ATT,
                     Is_scaling=Is_scaling,
-                    Debugging=0,
                     Cat_style=CAT_STYLE,
                     Is_aux=IS_AUX,
                     ONLY_CONV6=ONLY_CONV6,
@@ -563,11 +554,6 @@ if __name__ == '__main__':
                         help='components of contextual data')
     parser.add_argument('--is_remove', type=int, default=0, help='whether to remove the problematic label')
 
-    parser.add_argument('--debug', type=int, default=0, help='Model debug')
-    parser.add_argument('--pretrained_class_model_path', type=str, default=None,
-                        help='freeze encoder param,using pretrain param')
-    parser.add_argument('--finetune_class_encoder', dest='finetune_class_encoder',
-                        action='store_true', default=False)
     parser.add_argument('--pos_en', type=int, default=1, help='positional encoding')
     parser.add_argument('--pos_en_mode', type=str, default='cat', help='positional encoding mode')
     parser.add_argument('--best', type=int, default=0, help='best test')

@@ -73,14 +73,13 @@ class Attention(nn.Module):
 class Patch_Transformer(nn.Module):
 
     def __init__(self, length, encoding_w, encoding_h, encoding_dim, patch_size_w, patch_size_h, sub_embedding_dim,
-                 is_mask=0, PATCH_METHOD='UNFOLD', Debugging=0):
+                 is_mask=0, PATCH_METHOD='UNFOLD'):
 
         super().__init__()
 
         self.is_mask = is_mask
         self.length = length
         self.patch_method = PATCH_METHOD
-        self.Debugging = Debugging
 
         self.encoding_w = encoding_w  # 32
         self.encoding_h = encoding_h  # 32
@@ -135,7 +134,6 @@ class Patch_Transformer(nn.Module):
             x = attn_output.permute(1, 0, 2)
 
         x = x.reshape(B_T, -1, encoding_h, encoding_w)
-        if self.Debugging: print('- patch 2D \t\t', x.shape)
 
         return x,atten_output_weight
 
@@ -256,11 +254,10 @@ class Decoder(nn.Module):
 class Multi_patch_transfomer(nn.Module):
 
     def __init__(self, Patch_list, length, cnn_encoding_w, cnn_encoding_h, cnn_encoding_dim, cnn_embedding_dim,
-                 dropout, Debugging, patch_method, residual=1, is_mask=0, norm_type='LN'):
+                 dropout, patch_method, residual=1, is_mask=0, norm_type='LN'):
 
         super().__init__()
 
-        self.Debugging = Debugging
         self.scale_num = len(Patch_list)
         self.patch_method = patch_method
         self.multi_patch_transformer = nn.ModuleList()
@@ -293,7 +290,6 @@ class Multi_patch_transfomer(nn.Module):
                 sub_embedding_dim=sub_dim,
                 is_mask=is_mask,
                 PATCH_METHOD=patch_method,
-                Debugging=Debugging,
             )
 
             self.multi_patch_transformer.append(patch_transformer)
@@ -334,7 +330,7 @@ class Multi_patch_transfomer(nn.Module):
 class Prediction_Model(nn.Module):
 
     def __init__(self, mcof, Length, Width, Height, Input_dim, Patch_list, Encoding_dim, Embedding_dim,
-                 Dropout=0.2, Att_num=1, Cross_att_num=1, Using_skip=0, Debugging=0, Is_mask=0, residual=1,
+                 Dropout=0.2, Att_num=1, Cross_att_num=1, Using_skip=0,  Is_mask=0, residual=1,
                  Is_scaling=1,  Norm_type='LN',**arg):
 
         super().__init__()
@@ -349,7 +345,6 @@ class Prediction_Model(nn.Module):
 
         self.mcof = mcof
         self.patch_method = mcof.patch_method
-        self.Debugging = Debugging
 
         self.input_channels = Input_dim
         self.output_channels = Input_dim
@@ -419,7 +414,7 @@ class Prediction_Model(nn.Module):
             for a in range(Att_num):
                 self.attention_c.append(
                     Multi_patch_transfomer(Patch_list, Length, encoding_w, encoding_h, tr_encoding_dim,
-                                        tr_embedding_dim, Dropout, Debugging, self.patch_method, residual,
+                                        tr_embedding_dim, Dropout, self.patch_method, residual,
                                         is_mask=Is_mask, norm_type=Norm_type))
 
 
@@ -428,7 +423,7 @@ class Prediction_Model(nn.Module):
             for a in range(Cross_att_num):
                 self.attention_cr.append(
                     Multi_patch_transfomer(Patch_list, Length, encoding_w, encoding_h, tr_encoding_dim,
-                                        tr_embedding_dim, Dropout, Debugging, self.patch_method, residual,
+                                        tr_embedding_dim, Dropout, self.patch_method, residual,
                                         is_mask=Is_mask, norm_type=Norm_type))
 
 
@@ -706,11 +701,9 @@ if __name__ == '__main__':
         #Embedding_dim=384,  # 256
         Is_mask=1,  # 1
         Is_scaling=1,  # 1
-        Debugging=0,  # 0
         TRANS_RESIDUAL=1,
         Norm_type='LN',
         Cat_style = 'cat',
-        #Cat_style = 'cat_trans',
         Is_aux=1,
         ONE_HOT=0,
         ONLY_CONV6=1,

@@ -18,7 +18,6 @@ TRAIN:
   IS_SEQ: 0
   OUT_STYLE: seq
   CAT_STYLE: cat
-  #CAT_STYLE: cat_trans
 
   #  PATCH_LIST:  '[[3,8],[3,16],[6,4],[6,16],[12,8],[3,4],[6,8],[12,16]]'
   #  PATCH_LIST: '[[2,16],[4,4],[4,8],[4,16],[8,8],[8,16],[8,32],[16,16]]'

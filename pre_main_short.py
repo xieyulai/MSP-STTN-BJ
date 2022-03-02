@@ -197,7 +197,6 @@ def run(mcof):
             Embedding_dim=MODEL_DIM,  # 256
             Is_mask=IS_MASK_ATT,  # 1
             Is_scaling=Is_scaling,  # 1
-            Debugging=0,  # 0
             Cat_style=CAT_STYLE,
             Is_aux=IS_AUX,
             ONLY_CONV6=ONLY_CONV6,
@@ -432,7 +431,6 @@ def run(mcof):
                     Embedding_dim=MODEL_DIM,
                     Is_mask=IS_MASK_ATT,
                     Is_scaling=Is_scaling,
-                    Debugging=0,
                     Cat_style=CAT_STYLE,
                     Is_aux=IS_AUX,
                     ONLY_CONV6=ONLY_CONV6,
@@ -608,17 +606,10 @@ if __name__ == '__main__':
 
     parser.add_argument('--is_remove', type=int,default=0, help='whether to remove the problematic label')
 
-    parser.add_argument('--debug', type=int, default=0, help='Model debug')
-    parser.add_argument('--pretrained_class_model_path', type=str, default=None,
-                        help='freeze encoder param,using pretrain param')
-    parser.add_argument('--finetune_class_encoder', dest='finetune_class_encoder',
-                        action='store_true', default=False)
     parser.add_argument('--pos_en', type=int, default=1, help='positional encoding')
     parser.add_argument('--pos_en_mode', type=str, default='cat', help='positional encoding mode')
     parser.add_argument('--best', type=int, default=0, help='best test')
-    #parser.add_argument('--with_onehot', type=int, default=0)
     parser.add_argument('--eval_mode', type=str, default='Epoch')
-    #parser.add_argument('--eval_mode', type=str, default='Iteration')
     mcof = parser.parse_args()
 
     run(mcof)
