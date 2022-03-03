@@ -19,13 +19,13 @@ TRAIN:
   DROPOUT: 0.0
 
   MODEL_DIM: 256
-  ATT_NUM: 4
-  CROSS_ATT_NUM: 4
+  ATT_NUM: 2
+  CROSS_ATT_NUM: 2
 
   BATCH_SIZE: 8
   EVAL_BATCH: 16
 
-  PATCH_LIST: '[[2,2],[2,2],[4,4],[4,4],[8,8],[8,8],[16,16],[16,16]]'
+  PATCH_LIST: '[[4,4],[4,4],[4,4],[4,4],[8,8],[8,8],[16,16],[16,16]]'
   #PATCH_LIST:  '[[16,16]]'
   LR: 1e-4
 
