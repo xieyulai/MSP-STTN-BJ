@@ -29,7 +29,7 @@ class Dataset:
         self.is_seq = Is_seq
 
         if self.dataset == 'TaxiBJ':
-            self.datafolder = 'TaxiBJ/dataset'
+            self.datafolder = 'TaxiBJ/raw_data'
             if self.data_type == 'Sub':
                 self.dataname = [
                     'BJ16_M32x32_T30_InOut.h5'
@@ -186,11 +186,11 @@ class Dataset:
         # (21360, 6, 2, 32, 32)   21360/48 = 445
 
         print(f'=============={self.inp_type} 输入加载成功！=============')
-        inp_path = f'./data/TaxiBJ/{self.data_type}set/AVG{self.length}/{self.inp_type}_inp_average.npy'
+        inp_path = f'./data/TaxiBJ/AVG6_4/expectation_inp.npy'
         all_average_data = np.load(inp_path, allow_pickle=True)
         new_average_data_list = list(all_average_data)
 
-        ext_cls_path = f'./data/TaxiBJ/{self.data_type}set/AVG{self.length}/{self.inp_type}_cls.npy'
+        ext_cls_path = f'./data/TaxiBJ/AVG6_4/expectation_cls.npy'
         all_ext_cls = np.load(ext_cls_path, allow_pickle=True)
         new_all_ext_cls = list(all_ext_cls)
 
