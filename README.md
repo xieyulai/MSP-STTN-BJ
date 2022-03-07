@@ -1,82 +1,74 @@
-# traffic
+# MSP-STTN
 
-## Data
-**Allset:(21360,2,32,32)**
-- ./data/Allset/MinMax/train_inp_average.npy   训练集的平均填充
+Code and data for the paper [Multi-Size Patched Spatial-Temporal Transformer Network for Short- and Long-Term Grid-based Crowd Flow Prediction]()
 
-**Subset:(6624,2,32,32)**
-- ./data/Subset/MinMax/train_inp_average.npy   训练集的平均填充
+Please cite the following paper if you use this repository in your research.
+```
+Under construction
+```
 
-## 短期流量预测任务--有context和avg两个输入
-- 主文件为pre_main.py
-- 配置文件为pre_setting_bj.yml
-- 数据处理文件 dateset.py 和 data_fetcher.py
-- 数据处理文件 dateset_cpte.py 和 data_fetcher_cpte.py
+This repo is for **TaxiBJ**, more information can be found in [MSP-STTN](https://github.com/xieyulai/MSP-STTN). 
 
-### 模型改进
-- ./net/imp_heat2heat.py
-- ./net/imp_heat.py
+## TaxiBJ
 
-### 训练
-    python pre_main.py
-           --mode train
-           --record 306
-           --dataset_type Sub
-           --patch_method STTN
-           --stream_num 1
-           --context_type cpt
-           --pos_en 1
+### Package
+```
+PyTorch > 1.07
+```
+Please refer to `requirements.txt`
 
-
-### 测试
-    python pre_main.py
-           --mode val
-           --record 306
-           --dataset_type Sub
-           --patch_method STTN
-           --stream_num 1
-           --context_type cpt
-           --pos_en 1
-
-### 原模型
-- 主文件为pre_main_short.py
-- 配置文件为pre_setting_bj.yml
-- 数据处理文件 dateset.py 和 data_fetcher.py
-
-- ./net/imp_pos_cl_heat2heat.py
-
-### 训练
-    python pre_main_short.py
-           --mode train
-           --record 306
-           --dataset_type Sub
-           --patch_method STTN
-           --pos_en 1
-
-### 继续训练
-    python pre_main_short.py
-           --mode train 
-           --record 408 
-           --keep_train 1 
-           --presume_record 401 
-           --presume_epoch_s 30
+### Data Preparation
+- Processing data according to [MSP-STTN-DATA](https://github.com/xieyulai/MSP-STTN-DATA).
+- The `data\` should be like this:
+```bash
+data
+___ TaxiBJ
+```
+- Or the processed data can be downloaded from [BAIDU_PAN](https://pan.baidu.com/s/1aXkP1NgGPCPSjSkus8rpdw),PW:`p3r0`.
 
 
-### 测试
-    python pre_main_short.py
-           --mode val
-           --record 306
-           --dataset_type Sub
-           --patch_method STTN
-           --pos_en 1
+### Pre-trained Models
+- Several pre-trained models can be downloaded from [BAIDU_PAN](https://pan.baidu.com/s/1HRzBa6L-HQtuSxNTUkA2vQ), PW:`9ius`.
+- The `model\` should be like this:
+```bash
+model
+___ Imp_0547
+___ ___ pre_model_ep_19.pth
+___ Imp_0548
+___ ___ pre_model_ep_41.pth
+___ Imp_1543
+___ ___ pre_model_ep_0.pth
+___ ___ pre_model_it_14700.pth
+___ Imp_1545
+___ ___ pre_model_ep_23.pth
+___ Imp_3548
+___ ___ pre_model_ep_22.pth
+___ Imp_3805
+___ ___ pre_model_ep_22.pth
+___ Imp_5547
+    ___ pre_model_ep_27.pth
+```
+- Use `sh BEST.sh` for short-term prediction.
+- Use `sh BEST_long.sh` for short-term prediction.
 
+### Train and Test
+- Use `sh TRAIN.sh` for short-term prediction.
+- Use `sh TRAIN_long.sh` for short-term prediction.
 
-
-## 长期流量预测任务--有context和avg两个输入
-- 主文件为pre_main_long.py
-- 配置文件为pre_setting_bj_l.yml
-- 数据处理文件 dateset_l.py 和 data_fetcher_l.py
-
-### 模型同短期
-
-### 训练测试也同短期
+### Repo Structure
+```bash
+___ BEST_long.sh
+___ BEST.sh
+___ data # Data
+___ dataset
+___ model # Store the training weights
+___ net # Network struture
+___ pre_main_short.py # Main function for shot-term prediction
+___ pre_setting_bj_long.yaml # Configuration for long-term prediction
+___ pre_setting_bj.yaml # Configuration for short-term prediction
+___ README.md
+___ record # Recording the training and the test
+___ TRAIN_long.sh
+___ TRAIN.sh
+___ util
+```
